@@ -46,6 +46,9 @@
 - Select *Next*
 - Select default preset (babel, eslint)
 - Select *Create project*
+- Navigate to *Plugins*
+- Select *Add vue-router*
+- Select *Continue* on the *Add router* dialog
 
 ## Project setup
 ```
