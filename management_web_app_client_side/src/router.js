@@ -14,17 +14,26 @@ const router = new Router({
     {
       path: '/home',
       name: 'Home',
-      component: Home
+      component: Home,
+      meta: {
+        requiresAuthentication: true
+      }
     },
     {
       path: '/firmware',
       name: 'FirmwareManagement',
-      component: FirmwareManagement
+      component: FirmwareManagement,
+      meta: {
+        requiresAuthentication: true
+      }
     },
     {
       path: '/groupmanagement',
       name: 'GroupManagement',
-      component: GroupManagement
+      component: GroupManagement,
+      meta: {
+        requiresAuthentication: true
+      }
     },
     {
       path: '/devicemanagement',
@@ -39,14 +48,10 @@ const router = new Router({
 
 // Global route guard
 router.beforeEach((to, from, next) => {
-  console.log('beforeEach');
-  console.log(to);
   if (to.matched.some(record => record.meta.requiresAuthentication)) {
-    console.log('matched');
     // this route requires auth, check if logged in
     if (authentication.isAuthenticated()) {
       // only proceed if authenticated.
-      console.log('authenticated!')
       next();
     } else {
       authentication.signIn();
