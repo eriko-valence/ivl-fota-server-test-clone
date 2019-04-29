@@ -4,6 +4,7 @@ var azure = require('azure-storage');
 
 module.exports = function (context, req) {
 
+    //azure sql database connection configuration
     var config =
     {
         authentication: {
@@ -21,43 +22,67 @@ module.exports = function (context, req) {
         }
     }
 
+    //initiate sql database connection
     var connection = new Connection(config);
     connection.on('connect', function(err) {
         getFirmwareManifest();
     });
 
+    /*
+      Returns the manifest for a version of firmware that the server determines that the fridge 
+      should download and apply.
+    */
     function getFirmwareManifest() {
 
-        let deviceid = req.params['deviceid'];
-        let reportedVersion = req.query['ver'];
-        let sqlQuery = `SELECT * from vwCheckFirmware where DeviceId = '${deviceid}' AND DesiredVersion > '${reportedVersion}'`;
+        let deviceid = req.params['deviceid']; //pull deviceid from route parameter
+        let reportedVersion = req.query['ver']; //pull reported firmware version from query parameter
+        //query to see if there is a desired firmware version newer than the reported version 
+        let sqlQuery = `SELECT * from vwCheckFirmware where DeviceId = '${deviceid}' AND DesiredVersion >= '${reportedVersion}'`;
 
+        //represents an azure sql query request that can be executed on a connection
         request = new Request(sqlQuery, function(err) {
         if (err) {
             console.log(err);}
         });
 
-        let desiredFirmware = {};
+        let desiredFirmware = [];
 
+        //a row event resulting from execution of the SQL statement
         request.on('row', function(columns) {
+            let fw = {}
             columns.forEach(function(column) {
-                desiredFirmware[column.metadata.colName] = column.value;
+                fw[column.metadata.colName] = column.value;
             });
+            desiredFirmware.push(fw);
         });
 
+        //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
-            let sasToken = generateSasToken(desiredFirmware['BlobContainer'], desiredFirmware['BlobName'], null);
-            context.res = {
-                status: 200,
-                body: {
-                    version: desiredFirmware['DesiredVersion'],
-                    signature: desiredFirmware['Signature'],
-                    uri: sasToken.uri,
-                    md5: desiredFirmware['Md5']
+            
+            if (desiredFirmware > 0) {
+                //Blank response; nothing needs to be done (reported firmware == desired firmware)
+                if (desiredFirmware[0]['DesiredVersion'] === reportedVersion) {
+                
+                context.res = {
+                    status: 204
+                };
+                } else {
+                    let sasToken = generateSasToken(desiredFirmware[0]['BlobContainer'], desiredFirmware[0]['BlobName'], null);
+                    context.res = {
+                        status: 200,
+                        body: {
+                            version: desiredFirmware[0]['DesiredVersion'],
+                            signature: desiredFirmware[0]['Signature'],
+                            uri: sasToken.uri,
+                            md5: desiredFirmware[0]['Md5']
+                        }
+                    };
                 }
-            };
-            context.done();
 
+            } else {
+              //TODO - Handle scenario where the reported version does not exist in the azure sql database
+            }
+            context.done();
         });
         connection.execSql(request);
     }
