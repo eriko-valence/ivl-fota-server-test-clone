@@ -1,6 +1,7 @@
 var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
 var azure = require('azure-storage');
+var _ = require('lodash');
 
 module.exports = function (context, req) {
 
@@ -34,10 +35,12 @@ module.exports = function (context, req) {
     */
     function getFirmwareManifest() {
 
-        let deviceid = req.params['deviceid']; //pull deviceid from route parameter
-        let reportedVersion = req.query['ver']; //pull reported firmware version from query parameter
+        //let deviceid = req.params['deviceid']; //pull deviceid from route parameter
+        let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
+        let reportedVersion = _.get(req.query, 'ver', ''); //pull reported firmware version from query parameter
         //query to see if there is a desired firmware version newer than the reported version 
-        let sqlQuery = `SELECT * from vwCheckFirmware where DeviceId = '${deviceid}' AND DesiredVersion >= '${reportedVersion}'`;
+        let sqlQuery = `SELECT * from vwCheckFirmware where DeviceId = '${deviceid}'`;
+        console.log('q: ' + sqlQuery);
 
         //represents an azure sql query request that can be executed on a connection
         request = new Request(sqlQuery, function(err) {
@@ -59,7 +62,7 @@ module.exports = function (context, req) {
         //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
             
-            if (desiredFirmware > 0) {
+            if (desiredFirmware.length > 0) {
                 //Blank response; nothing needs to be done (reported firmware == desired firmware)
                 if (desiredFirmware[0]['DesiredVersion'] === reportedVersion) {
                 
@@ -80,7 +83,10 @@ module.exports = function (context, req) {
                 }
 
             } else {
-              //TODO - Handle scenario where the reported version does not exist in the azure sql database
+                context.res = {
+                    status: 404,
+                    body: 'No record of device on server side'
+                };
             }
             context.done();
         });
