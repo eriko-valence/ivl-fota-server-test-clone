@@ -1,4 +1,14 @@
 {
-  "$schema": "http://json.schemastore.org/proxies",
-  "proxies": {}
+    "$schema": "http://json.schemastore.org/proxies",
+    "proxies": {
+        "v1": {
+            "matchCondition": {
+                "route": "v1/fota/fwcheck/{deviceid:int}",
+                "methods": [
+                    "GET"
+                ]
+            },
+            "backendUri": "https://ivlapidevice.azurewebsites.net/api/CheckFirmware/{deviceid:int}"
+        }
+    }
 }
