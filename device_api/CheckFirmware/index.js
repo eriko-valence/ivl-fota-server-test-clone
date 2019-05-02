@@ -1,5 +1,6 @@
 var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
+var TYPES = require('tedious').TYPES;
 var _ = require('lodash');
 const KeyVault = require('azure-keyvault');
 const msRestAzure = require('ms-rest-azure');
@@ -36,12 +37,14 @@ module.exports = function (context, req) {
     function getFirmwareManifest(connection) {
         let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
         let reportedVersion = _.get(req.query, 'ver', ''); //pull reported firmware version from query parameter
-        let sqlQuery = `SELECT * from vwCheckFirmware where DeviceId = '${deviceid}'`;
-        console.log('q: ' + sqlQuery);
+        let sqlQuery = 'uspGetDeviceFirmwareManifest';
         //represents an azure sql query request that can be executed on a connection
         request = new Request(sqlQuery, function(err) {
             if (err) {console.log(err); }
         });
+
+        request.addParameter('deviceid', TYPES.Int, deviceid);
+
         let desiredFirmware = [];
         let apiFieldMappings = apihelper.getFirmwareManifestFieldMappings();
         //a row event resulting from execution of the SQL statement
@@ -50,8 +53,6 @@ module.exports = function (context, req) {
             if (fw.length === 1) {
                 desiredFirmware.push(fw[0]);
             }
-
-
         });
         //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
@@ -82,42 +83,6 @@ module.exports = function (context, req) {
             }
             context.done();
         });
-        connection.execSql(request);
+        connection.callProcedure(request);
     }
-
-    /*
-      Returns a SAS token for Azure Storage for the specified container. 
-      You can also optionally specify a particular blob name and access permissions. 
-      To learn more, see https://github.com/Azure-Samples/functions-dotnet-sas-token/blob/master/README.md
-    */
-   /*
-   function generateSasToken(container, blobName, permissions) {
-        var connString = process.env.AzureWebJobsStorage;
-        var blobService = azure.createBlobService(connString);
-
-        // Create a SAS token that expires in an hour
-        // Set start time to five minutes ago to avoid clock skew.
-        var startDate = new Date();
-        startDate.setMinutes(startDate.getMinutes() - 5);
-        var expiryDate = new Date(startDate);
-        expiryDate.setMinutes(startDate.getMinutes() + 60);
-
-        permissions = permissions || azure.BlobUtilities.SharedAccessPermissions.READ;
-
-        var sharedAccessPolicy = {
-            AccessPolicy: {
-                Permissions: permissions,
-                Start: startDate,
-                Expiry: expiryDate
-            }
-        };
-        var sasToken = blobService.generateSharedAccessSignature(container, blobName, sharedAccessPolicy);
-        
-        return {
-            token: sasToken,
-            uri: blobService.getUrl(container, blobName, sasToken, true)
-        };
-    }
-*/
-
 }
