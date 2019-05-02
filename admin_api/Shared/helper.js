@@ -20,7 +20,6 @@ module.exports = {
     },
 
     processRow: function(columns, apiFieldMappings) {
-        console.log('process row');
         let record = [];
         let device = {};
         let errorDetected = 0;

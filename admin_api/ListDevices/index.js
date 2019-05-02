@@ -7,7 +7,7 @@ const helper = require('../Shared/helper');
 const apihelper = require('../Shared/apimappings');
 
 module.exports =  function (context, req) {
-    let sortBy = _.get(req.query, 'sort_by', ''); //sort_by=asc(group)
+    let sortBy = _.get(req.query, 'sort_by', ''); //example --> sort_by=desc(deviceid)
     let secret = process.env.AzureADClientSecret;
     let clientId = process.env.AzureADClientID;
     let domain = process.env.AzureADTenantID;
@@ -29,7 +29,7 @@ module.exports =  function (context, req) {
     });
 
    function getDevices(connection) {
-        let sqlQuery = `SELECT * from vwDevice`;
+        let sqlQuery = 'uspGetAllDevices';
         request = new Request(sqlQuery, function(err) {
             if (err) { console.log(err); }
         });
@@ -65,6 +65,6 @@ module.exports =  function (context, req) {
             }
             context.done();
         });
-        connection.execSql(request);
+        connection.callProcedure(request);
     }
 };
