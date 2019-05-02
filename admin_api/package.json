@@ -1,0 +1,11 @@
+{
+	"version": "1.0.0",
+	"name": "admin_api",
+	"private": true,
+	"dependencies": {
+		"azure-keyvault": "^3.0.4",
+		"lodash": "^4.17.11",
+		"ms-rest-azure": "^2.6.0",
+		"tedious": "^5.0.3"
+	}
+}
