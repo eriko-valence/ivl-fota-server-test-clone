@@ -7,6 +7,7 @@ const helper = require('../Shared/helper');
 const apihelper = require('../Shared/apimappings');
 
 module.exports =  function (context, req) {
+    let sortBy = _.get(req.query, 'sort_by', ''); //sort_by=asc(group)
     let secret = process.env.AzureADClientSecret;
     let clientId = process.env.AzureADClientID;
     let domain = process.env.AzureADTenantID;
@@ -44,6 +45,14 @@ module.exports =  function (context, req) {
         //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
             if (devices.length > 0) {
+                let sort = helper.processSortQueryString(sortBy);
+                if (sort.length === 1 ) {
+                    let sortColumn = _.get(sort[0], 'column', '');
+                    let sortOrder = _.get(sort[0], 'order', '');
+                    if (sortColumn !== '' && sortOrder !== '') {
+                        devices = _.orderBy(devices, [sortColumn], [sortOrder]);
+                    }
+                }
                 context.res = {
                     status: 200,
                     body: devices

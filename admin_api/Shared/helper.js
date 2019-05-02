@@ -38,5 +38,20 @@ module.exports = {
             record.push(device);
         }
         return record;
+    },
+
+    processSortQueryString(sortBy) {
+        let sort = [];
+        var regExpGetSortColumn = /\(([^)]+)\)/;
+        var regExpGetSortOrder = /([^)]+)\(/;
+        let sortColumn = regExpGetSortColumn.exec(sortBy);
+        let sortOrder = regExpGetSortOrder.exec(sortBy);
+        if (sortOrder !== null & sortOrder !== null) {
+            sort.push({
+                column : sortColumn[1],
+                order : sortOrder[1]
+            });
+        }
+        return sort;
     }
  }
