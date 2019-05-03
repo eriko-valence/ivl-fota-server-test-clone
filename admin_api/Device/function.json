@@ -10,7 +10,7 @@
         "post",
         "put"
       ],
-      "route": "Device/{deviceid}"
+      "route": "Device/{deviceid?}"
     },
     {
       "type": "http",
