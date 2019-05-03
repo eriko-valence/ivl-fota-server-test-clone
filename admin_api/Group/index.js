@@ -32,7 +32,7 @@ module.exports =  function (context, req) {
                 } else if (requestMethod === 'POST') {
                     createGroup(connection); //Creates a new device group in MFOX DB.
                 } else if (requestMethod === 'PUT') {
-                    //updateGroup(connection); //Modifies existing group in the MFOX DB
+                    updateGroup(connection); //Modifies existing group in the MFOX DB
                 } else if (requestMethod === 'DELETE') {
                     //deleteGroup(connection); //Deletes existing group from MFOX DB
                 }
@@ -119,6 +119,56 @@ module.exports =  function (context, req) {
             context.res = {
                 status: 404,
                 body: `Missing required request parameter 'name' and/or 'desired_fw_id'`
+            };
+            context.done();   
+        }
+    }
+
+    function updateGroup(connection) {
+        console.log('updateGroup');
+        let groupid = _.get(req.params, 'groupid', '');
+        let groupname = _.get(req.body, 'name', null);
+        let desiredfwid = _.get(req.body, 'desired_fw_id', null);
+        if (groupid !== null && groupname !== null) {
+            let sqlQuery = 'uspUpdateGroup';
+            request = new Request(sqlQuery, function(err) {
+                if (err) { console.log(err); }
+            });
+            request.addParameter('name', TYPES.NChar, groupname);
+            request.addParameter('groupid', TYPES.Int, groupid);
+            request.addParameter('desiredfwid', TYPES.Int, desiredfwid);
+            let groups = [];
+            //used to map the sql query result set columns to their related api fields
+            let apiFieldMappings = apihelper.getGroupApiFieldMappings();
+            //process row from execution of the SQL statement
+            request.on('row', function(columns) {
+               let group = helper.processRow(columns,apiFieldMappings);
+               if (group.length === 1) {
+                   groups.push(group[0]);
+               }
+            });
+            //this is the final event emitted by an azure sql query request
+            request.on('requestCompleted', function () {
+            if (groups.length > 0) {
+                context.res = {
+                    status: 200,
+                    body: groups[0]
+                };
+            } else {
+                context.res = {
+                    status: 404,
+                    body: 'No groups found on server side'
+                };
+            }
+            context.done();
+            });
+            console.log('call the stored procedure');
+            console.log(request);
+            connection.callProcedure(request);
+        } else {
+            context.res = {
+                status: 404,
+                body: `Missing required request parameters`
             };
             context.done();   
         }

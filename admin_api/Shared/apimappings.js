@@ -15,7 +15,8 @@ module.exports = {
     
     getGroupApiFieldMappings: function() {
         return {
-            GroupName: 'group',
+            GroupId: 'group_id',
+            GroupName: 'name',
             DesiredFirmwareVersion: 'desired_fw'
         };
     }
