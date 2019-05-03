@@ -6,7 +6,6 @@ const KeyVault = require('azure-keyvault');
 const msRestAzure = require('ms-rest-azure');
 const helper = require('../Shared/helper');
 const apihelper = require('../Shared/apimappings');
-const models = require('../Shared/models');
 
 module.exports =  function (context, req) {
     let requestMethod = _.get(req, 'method', ''); 
