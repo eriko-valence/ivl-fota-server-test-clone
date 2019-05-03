@@ -52,5 +52,11 @@ module.exports = {
             });
         }
         return sort;
+    },
+
+    validateObjectsHaveSamePropertyNames(a, b) {
+        var aProps = Object.getOwnPropertyNames(a);
+        var bProps = Object.getOwnPropertyNames(b);
+        return _.isEqual(aProps.sort(), bProps.sort())
     }
  }
