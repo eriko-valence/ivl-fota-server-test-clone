@@ -1,6 +1,6 @@
 var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
-//var TYPES = require('tedious').TYPES;
+var TYPES = require('tedious').TYPES;
 var _ = require('lodash');
 const KeyVault = require('azure-keyvault');
 const msRestAzure = require('ms-rest-azure');
@@ -30,7 +30,7 @@ module.exports =  function (context, req) {
                 if (requestMethod === 'GET') {
                     getGroups(connection); //Returns a list of all groups registered in the MFOX DB.
                 } else if (requestMethod === 'POST') {
-                    //createGroup(connection); //Creates a new device group in MFOX DB.
+                    createGroup(connection); //Creates a new device group in MFOX DB.
                 } else if (requestMethod === 'PUT') {
                     //updateGroup(connection); //Modifies existing group in the MFOX DB
                 } else if (requestMethod === 'DELETE') {
@@ -49,9 +49,9 @@ module.exports =  function (context, req) {
         let apiFieldMappings = apihelper.getGroupApiFieldMappings();
         //process row from execution of the SQL statement
         request.on('row', function(columns) {
-            let device = helper.processRow(columns,apiFieldMappings);
-            if (device.length === 1) {
-                groups.push(device[0]);
+            let group = helper.processRow(columns,apiFieldMappings);
+            if (group.length === 1) {
+                groups.push(group[0]);
             }
         });
         //this is the final event emitted by an azure sql query request
@@ -78,5 +78,49 @@ module.exports =  function (context, req) {
             context.done();
         });
         connection.callProcedure(request);
+    }
+
+    function createGroup(connection) {
+        let name = _.get(req.body, 'name', null);
+        let desiredfwid = _.get(req.body, 'desired_fw_id', null);
+        if (name !== null && desiredfwid !== null) {
+            let sqlQuery = 'uspCreateGroup';
+            request = new Request(sqlQuery, function(err) {
+                if (err) { console.log(err); }
+            });
+            request.addParameter('name', TYPES.NChar, name);
+            request.addParameter('desiredfwid', TYPES.Int, desiredfwid);
+           let groups = [];
+           let apiFieldMappings = apihelper.getGroupApiFieldMappings();
+           //process row from execution of the SQL statement
+           request.on('row', function(columns) {
+               let group = helper.processRow(columns,apiFieldMappings);
+               if (group.length === 1) {
+                   groups.push(group[0]);
+               }
+           });
+            //this is the final event emitted by an azure sql query request
+            request.on('requestCompleted', function () {
+            if (groups.length > 0) {
+                context.res = {
+                    status: 201,
+                    body: groups[0]
+                };
+            } else {
+                context.res = {
+                    status: 404,
+                    body: 'No groups found on server side'
+                };
+            }
+            context.done();
+            });
+            connection.callProcedure(request);
+        } else {
+            context.res = {
+                status: 404,
+                body: `Missing required request parameter 'name' and/or 'desired_fw_id'`
+            };
+            context.done();   
+        }
     }
 };
