@@ -31,6 +31,8 @@ module.exports =  function (context, req) {
                     getDevices(connection); //List All Devices
                 } else if (requestMethod === 'POST') {
                     createDevice(connection); //Creates a new device in MFOX DB.
+                } else if (requestMethod === 'PUT') {
+                    updateDevice(connection); //Modifies existing device in the MFOX DB
                 }
             });
         });
@@ -134,6 +136,59 @@ module.exports =  function (context, req) {
             context.res = {
                 status: 404,
                 body: `Missing required request parameter 'deviceid'`
+            };
+            context.done();   
+        }
+    }
+
+    function updateDevice(connection) {
+        console.log('updateDevice');
+        let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
+        let groupid = _.get(req.body, 'group_id', null);
+        if (deviceid !== null && groupid !== null) {
+            let sqlQuery = 'uspUpdateDevice';
+            request = new Request(sqlQuery, function(err) {
+                if (err) { console.log(err); }
+            });
+            request.addParameter('deviceid', TYPES.BigInt, deviceid);
+            request.addParameter('groupid', TYPES.Int, groupid);
+            let devices = [];
+            //used to map the sql query result set columns to their related api fields
+            let apiFieldMappings = apihelper.getDeviceApiFieldMappings();
+            //process row from execution of the SQL statement
+            request.on('row', function(columns) {
+                console.log('request.on.row');
+                console.log('columns');
+                console.log(columns);
+               let device = helper.processRow(columns,apiFieldMappings);
+               if (device.length === 1) {
+                   devices.push(device[0]);
+               }
+            });
+            //this is the final event emitted by an azure sql query request
+            request.on('requestCompleted', function () {
+                console.log('devices');
+                console.log(devices);
+            if (devices.length > 0) {
+                context.res = {
+                    status: 200,
+                    body: devices[0]
+                };
+            } else {
+                context.res = {
+                    status: 404,
+                    body: 'No devices found on server side'
+                };
+            }
+            context.done();
+            });
+            console.log('call the stored procedure');
+            console.log(request);
+            connection.callProcedure(request);
+        } else {
+            context.res = {
+                status: 404,
+                body: `Missing required request parameter 'deviceid' and/or 'groupid'`
             };
             context.done();   
         }
