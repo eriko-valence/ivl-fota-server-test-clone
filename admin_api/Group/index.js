@@ -34,7 +34,7 @@ module.exports =  function (context, req) {
                 } else if (requestMethod === 'PUT') {
                     updateGroup(connection); //Modifies existing group in the MFOX DB
                 } else if (requestMethod === 'DELETE') {
-                    //deleteGroup(connection); //Deletes existing group from MFOX DB
+                    deleteGroup(connection); //Deletes existing group from MFOX DB
                 }
             });
         });
@@ -169,6 +169,43 @@ module.exports =  function (context, req) {
             context.res = {
                 status: 404,
                 body: `Missing required request parameters`
+            };
+            context.done();   
+        }
+    }
+
+    function deleteGroup(connection) {
+        let groupid = _.get(req.params, 'groupid', null);
+
+        if (groupid !== null) {
+            let sqlQuery = 'uspDeleteGroup';
+            request = new Request(sqlQuery, function(err) {
+                if (err) { console.log(err); }
+            });
+            request.addParameter('groupid', TYPES.Int, groupid);
+            request.addOutputParameter('result', TYPES.Int);
+            
+            //Use this event handler if the usp returns an output parameter
+            request.on('returnValue', function (parameterName, value, metadata) { 
+                console.log('request.on(returnValue)');
+                console.log(value);
+                if (parameterName === 'result' && value === 1) {
+                    context.res = {
+                        status: 200
+                    };
+                } else {
+                    context.res = {
+                        status: 404,
+                        body: 'Error deleting group'
+                    };
+                }
+                context.done();
+            });
+            connection.callProcedure(request);
+        } else {
+            context.res = {
+                status: 404,
+                body: `Missing required request parameter 'groupid'`
             };
             context.done();   
         }
