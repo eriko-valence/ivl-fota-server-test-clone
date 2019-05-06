@@ -31,8 +31,6 @@ module.exports =  function (context, req) {
                     getFirmware(connection); //Returns a list of all firmware versions registered in the MFOX DB.
                 } else if (requestMethod === 'POST') {
                     createFirmware(connection); //Adds new firmware release to MFOX DB.
-                //} else if (requestMethod === 'PUT') {
-                //    updateFirmware(connection); //Modifies existing group in the MFOX DB
                 } else if (requestMethod === 'DELETE') {
                     deleteFirmware(connection); //Deletes existing firmware from MFOX DB
                 }
@@ -131,6 +129,43 @@ module.exports =  function (context, req) {
             context.res = {
                 status: 404,
                 body: `Missing required request parameters`
+            };
+            context.done();   
+        }
+    }
+
+    function deleteFirmware(connection) {
+        let firmware_id = _.get(req.params, 'firmware_version_id', null);
+
+        if (firmware_id !== null) {
+            let sqlQuery = 'uspDeleteFirmware';
+            request = new Request(sqlQuery, function(err) {
+                if (err) { console.log(err); }
+            });
+            request.addParameter('firmwareid', TYPES.Int, firmware_id);
+            request.addOutputParameter('result', TYPES.Int);
+            
+            //Use this event handler if the usp returns an output parameter
+            request.on('returnValue', function (parameterName, value, metadata) { 
+                console.log('request.on(returnValue)');
+                console.log(value);
+                if (parameterName === 'result' && value === 1) {
+                    context.res = {
+                        status: 200
+                    };
+                } else {
+                    context.res = {
+                        status: 404,
+                        body: 'Error deleting firmware'
+                    };
+                }
+                context.done();
+            });
+            connection.callProcedure(request);
+        } else {
+            context.res = {
+                status: 404,
+                body: `Missing required request parameter`
             };
             context.done();   
         }

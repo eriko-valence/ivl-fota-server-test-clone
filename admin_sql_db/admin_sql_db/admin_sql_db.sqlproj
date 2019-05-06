@@ -81,5 +81,6 @@
     <Build Include="dbo\Views\vwFirmware.sql" />
     <Build Include="dbo\Stored Procedures\uspGetAllFirmware.sql" />
     <Build Include="dbo\Stored Procedures\uspCreateFirmware.sql" />
+    <Build Include="dbo\Stored Procedures\uspDeleteFirmware.sql" />
   </ItemGroup>
 </Project>

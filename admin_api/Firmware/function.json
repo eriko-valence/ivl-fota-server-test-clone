@@ -7,8 +7,10 @@
       "name": "req",
       "methods": [
         "get",
-        "post"
-      ]
+        "post",
+        "delete"
+      ],
+      "route": "Firmware/{firmware_version_id?}"
     },
     {
       "type": "http",
