@@ -1,8 +1,11 @@
 module.exports = {
-    getApiCreateDeviceRequest: function() {
+    getApiResponseModelFirmwareManifest: function() {
         return {
-            deviceid:null,
-            group_id:null
+            firmware_id: null,
+            version:null,
+            signature:null,
+            uri:null,
+            md5:null
         };
     }
  }

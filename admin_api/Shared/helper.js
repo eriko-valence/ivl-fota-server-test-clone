@@ -18,7 +18,6 @@ module.exports = {
             }
         };
     },
-
     processRow: function(columns, apiFieldMappings) {
         let record = [];
         let device = {};
@@ -38,7 +37,6 @@ module.exports = {
         }
         return record;
     },
-
     processSortQueryString(sortBy) {
         let sort = [];
         var regExpGetSortColumn = /\(([^)]+)\)/;
@@ -53,10 +51,13 @@ module.exports = {
         }
         return sort;
     },
-
     validateObjectsHaveSamePropertyNames(a, b) {
         var aProps = Object.getOwnPropertyNames(a);
         var bProps = Object.getOwnPropertyNames(b);
         return _.isEqual(aProps.sort(), bProps.sort())
+    },
+    getAzureBlobUri(blobContainer, blobName) {
+        let azureBlobEndpoint = process.env.AzureBlobEndpoint;
+        return `${azureBlobEndpoint}${blobContainer}/${blobName}`;
     }
  }

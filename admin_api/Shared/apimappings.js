@@ -19,5 +19,16 @@ module.exports = {
             GroupName: 'name',
             DesiredFirmwareVersion: 'desired_fw'
         };
+    },
+
+    getFirmwareApiFieldMappings: function() {
+        return {
+            FirmwareId: 'firmware_id',
+            Version: 'version',
+            Signature: 'signature',
+            Md5: 'md5',
+            BlobName: 'blob_name',
+            BlobContainer: 'blob_container'
+        };
     }
  }
