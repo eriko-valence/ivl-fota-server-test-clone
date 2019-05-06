@@ -80,5 +80,6 @@
     <Build Include="dbo\Stored Procedures\uspDeleteGroup.sql" />
     <Build Include="dbo\Views\vwFirmware.sql" />
     <Build Include="dbo\Stored Procedures\uspGetAllFirmware.sql" />
+    <Build Include="dbo\Stored Procedures\uspCreateFirmware.sql" />
   </ItemGroup>
 </Project>

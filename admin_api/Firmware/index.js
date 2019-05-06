@@ -1,6 +1,6 @@
 var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
-//var TYPES = require('tedious').TYPES;
+var TYPES = require('tedious').TYPES;
 var _ = require('lodash');
 const KeyVault = require('azure-keyvault');
 const msRestAzure = require('ms-rest-azure');
@@ -87,5 +87,56 @@ module.exports =  function (context, req) {
         });
         connection.callProcedure(request);
     }
+
+    function createFirmware(connection) {
+        let version = _.get(req.body, 'version', null);
+        let image = _.get(req.body, 'image', null);
+        let signature = _.get(req.body, 'signature', null);
+        if (version !== null && image !== null && signature !== null) {
+            let sqlQuery = 'uspCreateFirmware';
+            request = new Request(sqlQuery, function(err) {
+                if (err) { console.log(err); }
+            });
+            request.addParameter('version', TYPES.NChar, version);
+            request.addParameter('signature', TYPES.NChar, signature);
+            request.addParameter('blobname', TYPES.NChar, `${process.env.AzureBlobNamePrefix}${image}`);
+            request.addParameter('blobcontainer', TYPES.NChar, process.env.AzureBlobContainer);
+
+           let firmware = [];
+           let apiFieldMappings = apihelper.getFirmwareApiFieldMappings();
+           //process row from execution of the SQL statement
+           request.on('row', function(columns) {
+               let fw = helper.processRow(columns,apiFieldMappings);
+               if (fw.length === 1) {
+                   firmware.push(fw[0]);
+               }
+           });
+            //this is the final event emitted by an azure sql query request
+            request.on('requestCompleted', function () {
+            if (firmware.length > 0) {
+                context.res = {
+                    status: 201,
+                    body: firmware[0]
+                };
+            } else {
+                context.res = {
+                    status: 404,
+                    body: 'No firmware found on server side'
+                };
+            }
+            context.done();
+            });
+            connection.callProcedure(request);
+        } else {
+            context.res = {
+                status: 404,
+                body: `Missing required request parameters`
+            };
+            context.done();   
+        }
+    }
+
+    
+
 
 };
