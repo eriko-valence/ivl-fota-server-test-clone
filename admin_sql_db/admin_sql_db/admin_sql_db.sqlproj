@@ -78,5 +78,7 @@
     <Build Include="dbo\Stored Procedures\uspCreateGroup.sql" />
     <Build Include="dbo\Stored Procedures\uspCreateDevice.sql" />
     <Build Include="dbo\Stored Procedures\uspDeleteGroup.sql" />
+    <Build Include="dbo\Views\vwFirmware.sql" />
+    <Build Include="dbo\Stored Procedures\uspGetAllFirmware.sql" />
   </ItemGroup>
 </Project>
