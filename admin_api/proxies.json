@@ -1,4 +1,72 @@
 {
-  "$schema": "http://json.schemastore.org/proxies",
-  "proxies": {}
+    "$schema": "http://json.schemastore.org/proxies",
+    "proxies": {
+        "v1-device-get-post": {
+            "matchCondition": {
+                "route": "v1/devices",
+                "methods": [
+                    "GET",
+                    "POST"
+                ]
+            },
+            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/Device"
+        },
+        "v1-device-put": {
+            "matchCondition": {
+                "route": "v1/devices/{deviceid}",
+                "methods": [
+                    "PUT"
+                ]
+            },
+            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/Device/{deviceid}"
+        },
+        "v1-group-get-post": {
+            "matchCondition": {
+                "route": "v1/groups",
+                "methods": [
+                    "GET",
+                    "POST"
+                ]
+            },
+            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/Group"
+        },
+        "v1-group-put-delete": {
+            "matchCondition": {
+                "route": "v1/groups/{group_id}",
+                "methods": [
+                    "PUT",
+                    "DELETE"
+                ]
+            },
+            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/Group/{group_id}"
+        },
+        "v1-firmware-get-post": {
+            "matchCondition": {
+                "route": "v1/firmware",
+                "methods": [
+                    "GET",
+                    "POST"
+                ]
+            },
+            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/Firmware"
+        },
+        "v1-firmware-delete": {
+            "matchCondition": {
+                "route": "v1/firmware/{firmware_version_id}",
+                "methods": [
+                    "DELETE"
+                ]
+            },
+            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/Firmware/{firmware_version_id}"
+        },
+        "v1-uploaduri-get": {
+            "matchCondition": {
+                "route": "v1/upload_uri",
+                "methods": [
+                    "GET"
+                ]
+            },
+            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/UploadUri"
+        }
+    }
 }
