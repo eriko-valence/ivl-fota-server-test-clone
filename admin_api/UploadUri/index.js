@@ -1,12 +1,16 @@
 const helper = require('../Shared/helper');
+var _ = require('lodash');
 
 module.exports = function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+
+    let name = _.get(req.query, 'name', ''); //pull deviceid from route parameter
+    console.log('name: ' + name);
+    console.log(req);
 
     // The following values can be used for permissions: 
     // "a" (Add), "r" (Read), "w" (Write), "d" (Delete), "l" (List)
     // Concatenate multiple permissions, such as "rwa" = Read, Write, Add
-    let sasToken = helper.generateSasToken("fota", "bin/test12345.txt", "rwa");
+    let sasToken = helper.generateSasToken("fota", name, "rwa");
 
     let bodySasUri = {sas_uri: sasToken.uri};
 
