@@ -1,9 +1,17 @@
 import AuthenticationContext from 'adal-angular/lib/adal.js'
 
-const config = {
+const config_azure_dev = {
   tenant: '255386c0-9741-4725-a48e-b2b1567706d9', //4af490af-c525-448d-b2c1-5a941571567e, 255386c0-9741-4725-a48e-b2b1567706d9 (valence)
   clientId: '79b2b483-4be6-45fe-bb1d-c7a9635cbf6c', //9777657a-54cd-4792-9230-b0d6385e14b2, 79b2b483-4be6-45fe-bb1d-c7a9635cbf6c (valence)
   redirectUri: 'https://ivladmindevelopment.z5.web.core.windows.net/', //http://localhost:8080, https://ivladmindevelopment.z5.web.core.windows.net/
+  cacheLocation: 'localStorage', //localStorage, sessionStorage
+  resourceApi: 'https://ivlapiadmin.azurewebsites.net' //https://secured-azure-function-app.azurewebsites.net, https://ivlapiadmin.azurewebsites.net
+};
+
+const config = {
+  tenant: '255386c0-9741-4725-a48e-b2b1567706d9', //4af490af-c525-448d-b2c1-5a941571567e, 255386c0-9741-4725-a48e-b2b1567706d9 (valence)
+  clientId: '79b2b483-4be6-45fe-bb1d-c7a9635cbf6c', //9777657a-54cd-4792-9230-b0d6385e14b2, 79b2b483-4be6-45fe-bb1d-c7a9635cbf6c (valence)
+  redirectUri: 'http://localhost:8080', //http://localhost:8080, https://ivladmindevelopment.z5.web.core.windows.net/
   cacheLocation: 'localStorage', //localStorage, sessionStorage
   resourceApi: 'https://ivlapiadmin.azurewebsites.net' //https://secured-azure-function-app.azurewebsites.net, https://ivlapiadmin.azurewebsites.net
 };
@@ -67,6 +75,14 @@ export default {
     // getCachedToken will only return a valid, non-expired token.
     if (this.authenticationContext.getCachedToken(config.resourceApi)) { return true; }
     return false;
+  },
+  getAccessToken() {
+    // getCachedToken will only return a valid, non-expired token.
+    if (this.authenticationContext.getCachedToken(config.resourceApi)) { 
+      return this.authenticationContext.getCachedToken(config.resourceApi); 
+    } else {
+      return null;
+    }
   },
   /**
    * @return An ADAL user profile object.
