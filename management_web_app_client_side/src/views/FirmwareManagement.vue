@@ -64,7 +64,7 @@ import authentication from '../authentication'
 
                 console.log(this.firmwareUploadBodyMFOX);
 
-                this.uploadToMFOX();
+                this.getAzureStorageSasToken(this.firmwareImage);
 
               this.handleLoadModal()
               this.$nextTick(() => {
@@ -72,6 +72,59 @@ import authentication from '../authentication'
               })
          },
          async loadTextFromFile(ev) {
+
+
+                console.log('loadTextFromFile');
+                const file = ev.target.files[0];
+                this.firmwareImage = file.name;
+                const reader = new FileReader();
+                console.log(file);
+
+                //const anonymousCredential = new AnonymousCredential();
+                // Use TokenCredential with OAuth token
+                //const tokenCredential = new TokenCredential("token");
+                //tokenCredential.token = "renewedToken"; // Renew the token by updating token field of token credential
+                reader.onload = e => this.$emit("load", e.target.result);
+                reader.readAsText(file);
+
+        },
+        getAzureStorageSasToken(blobName) {
+
+            let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/upload_uri?name=${blobName}`;
+            let accessToken = `Bearer ${authentication.getAccessToken()}`;
+                                console.log('--this');
+                    console.log(this);
+                    console.log('--this');
+            this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
+                    .then((response) => {
+                    console.log('success');
+                    console.log(response.data);
+                    console.log('----self');
+                    //console.log(this);
+                    console.log(this.uploadFirmwareToAzureBlob(response.data.sas_uri));
+                    console.log(this.uploadToMFOX());
+                    console.log('----self');
+                    }).catch(function (error) {
+                    console.log('error');
+                    console.log(error);
+            });
+
+        },
+        uploadToMFOX() {
+            let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
+            let accessToken = `Bearer ${authentication.getAccessToken()}`;
+            this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
+                    .then(function (response) {
+                    console.log('success');
+                    console.log(response.data);
+                    }).catch(function (error) {
+                    console.log('error');
+                    console.log(error);
+            });
+        },
+        async uploadFirmwareToAzureBlob(uploadUri) {
+                console.log('uploadUri: ' + uploadUri);
+
                 const {
                 AnonymousCredential,
                 StorageURL,
@@ -82,11 +135,13 @@ import authentication from '../authentication'
                 Aborter
                 } = require("@azure/storage-blob");
 
-                console.log('loadTextFromFile');
-                const file = ev.target.files[0];
-                this.firmwareImage = file.name;
-                const reader = new FileReader();
-                console.log(file);
+                console.log('GET to retrieve firmware upload URI');
+
+                let upload_uri = 'https://ivlapiadmin.azurewebsites.net/v1/upload_uri';
+
+                console.log('POST to write new firmware information to MFOX');
+
+
 
                 // Enter your storage account name and shared key
                 const account = "ivlapidevice916d";
@@ -121,28 +176,6 @@ import authentication from '../authentication'
                     `Upload block blob ${blobName} successfully`,
                     uploadBlobResponse.requestId
                 );
-
-                //const anonymousCredential = new AnonymousCredential();
-
-                // Use TokenCredential with OAuth token
-                //const tokenCredential = new TokenCredential("token");
-                //tokenCredential.token = "renewedToken"; // Renew the token by updating token field of token credential
-
-                reader.onload = e => this.$emit("load", e.target.result);
-                reader.readAsText(file);
-        },
-        uploadToMFOX() {
-
-            let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
-            let accessToken = `Bearer ${authentication.getAccessToken()}`;
-            this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
-                    .then(function (response) {
-                    console.log('success');
-                    console.log(response.data);
-                    }).catch(function (error) {
-                    console.log('error');
-                    console.log(error);
-            });
 
         }
     },
