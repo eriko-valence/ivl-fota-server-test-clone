@@ -12,7 +12,7 @@
     >
       <form @submit.stop.prevent="handleSubmit">
         <b-form-input v-model="firmwareVersion" placeholder="Enter the firmware version"></b-form-input>
-        <b-form-input v-model="firmwareSignature" placeholder="Enter the firmware signature"></b-form-input>
+        <b-form-textarea rows="5" max-rows="10" v-model="firmwareSignature" placeholder="Enter the firmware signature"></b-form-textarea>
         <input type="file" @change="loadTextFromFile">
       </form>
     </b-modal>
@@ -58,7 +58,8 @@ import authentication from '../authentication'
                 this.firmwareUploadBodyMFOX = {
                   version: this.firmwareVersion,
                   signature : this.firmwareSignature,
-                  image    : this.firmwareImage
+                  image    : this.firmwareImage,
+                  md5 : null
                 };
                 this.getAzureStorageSasToken(this.firmwareImage);
 
@@ -103,8 +104,8 @@ import authentication from '../authentication'
                     .then((response) => {
                     console.log(`Step #1d: this.firmwareFileContent: ${fileContent}`);
                     console.log(`Step #1e: Successfully acquired sas token: ${response.data.sas_uri}`);
-                    console.log(this.uploadFirmwareToAzureBlob(response.data.sas_uri, fileContent, blobName));
-                    console.log(this.uploadToMFOX());
+                    this.uploadFirmwareToAzureBlob(response.data.sas_uri, fileContent, blobName);
+                    //this.uploadToMFOX();
                     }).catch(function (error) {
                     console.log('error');
                     console.log(error);
@@ -114,6 +115,10 @@ import authentication from '../authentication'
             console.log(`Step #3a: Upload firmware metadata to MFOX...`);
             let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
             let accessToken = `Bearer ${authentication.getAccessToken()}`;
+            console.log('################################################');
+            console.log(this.firmwareUploadBodyMFOX);
+            console.log(this.firmwareUploadBodyMFOX.md5);
+            console.log('################################################');
             this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
                     .then(function (response) {
                     console.log('success');
@@ -194,12 +199,25 @@ import authentication from '../authentication'
                       content,
                       content.size
                 );
-                console.log(`Step #2b: Succssfully uploaded firmware to azure storage blob container... ${uploadBlobResponse.requestId}`);
 
                 //}
-                //console.log('----------------------------');
-                //console.log(this.firmwareFileContent);
-                //console.log('----------------------------');
+                console.log('----------------------------');
+                //var string = btoa(new TextDecoder('windows-1251').decode(uploadBlobResponse.contentMD5));
+
+//var u8 = new Uint8Array([65, 66, 67, 68]);
+//var decoder = new TextDecoder('utf8');
+//var b64encoded = btoa(decoder.decode(uploadBlobResponse.contentMD5));
+//var str2 = decodeURIComponent(escape(window.atob(uploadBlobResponse.contentMD5)));
+//console.log(uploadBlobResponse);
+
+let md5_b64 = btoa(String.fromCharCode.apply(null, uploadBlobResponse.contentMD5));
+let md5_hex = Buffer.from(uploadBlobResponse.contentMD5).toString('hex');
+
+console.log(this.firmwareUploadBodyMFOX);
+this.firmwareUploadBodyMFOX.md5 = md5_hex;
+console.log(this.firmwareUploadBodyMFOX);
+
+                console.log('----------------------------');
                 //reader.readAsText(this.firmwareFileContent);
 
                 // Create a blob
@@ -208,6 +226,8 @@ import authentication from '../authentication'
                 //    `Upload block blob ${blobName} successfully`,
                 //    uploadBlobResponse.requestId
                 //);
+                console.log(`Step #2b: Succssfully uploaded firmware to azure storage blob container... ${uploadBlobResponse.requestId}`);
+                this.uploadToMFOX();
 
         }
     },

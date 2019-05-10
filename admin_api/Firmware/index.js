@@ -90,13 +90,15 @@ module.exports =  function (context, req) {
         let version = _.get(req.body, 'version', null);
         let image = _.get(req.body, 'image', null);
         let signature = _.get(req.body, 'signature', null);
-        if (version !== null && image !== null && signature !== null) {
+        let md5 = _.get(req.body, 'md5', null);
+        if (version !== null && image !== null && signature !== null && md5 !== null) {
             let sqlQuery = 'uspCreateFirmware';
             request = new Request(sqlQuery, function(err) {
                 if (err) { console.log(err); }
             });
             request.addParameter('version', TYPES.NChar, version);
             request.addParameter('signature', TYPES.NChar, signature);
+            request.addParameter('md5', TYPES.NChar, md5);
             request.addParameter('blobname', TYPES.NChar, `${process.env.AzureBlobNamePrefix}${image}`);
             request.addParameter('blobcontainer', TYPES.NChar, process.env.AzureBlobContainer);
 

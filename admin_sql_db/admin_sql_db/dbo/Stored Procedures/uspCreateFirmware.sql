@@ -1,12 +1,13 @@
 ﻿CREATE PROCEDURE [dbo].[uspCreateFirmware]
-  @version nchar(100), @signature nchar(100), @blobname nchar(100), @blobcontainer nchar(100)
+  @version nchar(100), @signature nchar(1000), @md5 nchar(100), @blobname nchar(100), @blobcontainer nchar(100)
 AS
 BEGIN
   
-  INSERT INTO DeviceFirmware([Version], [Signature], BlobName, BlobContainer ) 
+  INSERT INTO DeviceFirmware([Version], [Signature], [Md5], [BlobName], [BlobContainer] ) 
 	VALUES(
 		@version,
 		@signature,
+		@md5,
 		@blobname,
 		@blobcontainer);
 
