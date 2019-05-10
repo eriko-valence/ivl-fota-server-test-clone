@@ -60,8 +60,8 @@ module.exports = {
       You can also optionally specify a particular blob name and access permissions. 
       To learn more, see https://github.com/Azure-Samples/functions-dotnet-sas-token/blob/master/README.md
     */
-    generateSasToken(container, blobName, permissions) {
-        var connString = process.env.AzureWebJobsStorage;
+    generateSasToken(connString, container, blobName, permissions) {
+        //var connString = process.env.AzureWebJobsStorage;
         var blobService = azure.createBlobService(connString);
 
         // Create a SAS token that expires in an hour

@@ -18,14 +18,15 @@ module.exports = function (context, req) {
         var vaultUri = "https://" + keyVaultname + ".vault.azure.net/";
         let var1 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginName", "");
         let var2 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginPass", "");
-        Promise.all([var1, var2]).then(function(results) {
+        let var3 = keyVaultClient.getSecret(vaultUri, "AzureBlobStorageConnectionString", "");
+        Promise.all([var1, var2, var3]).then(function(results) {
             let azureSqlLoginName = _.get(results[0], 'value', '');
             let azureSqlLoginPass = _.get(results[1], 'value', '');
-
+            let azureBlobStorageConnectionString = _.get(results[2], 'value', '');
             let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass); //build out azure sql config
             var connection = new Connection(config);
             connection.on('connect', function(err) {
-                getFirmwareManifest(connection);
+                getFirmwareManifest(azureBlobStorageConnectionString, connection);
             });
         });
     });
@@ -34,7 +35,7 @@ module.exports = function (context, req) {
       Returns the manifest for a version of firmware that the server determines that the fridge 
       should download and apply.
     */
-    function getFirmwareManifest(connection) {
+    function getFirmwareManifest(blobConnection, connection) {
         let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
         let reportedVersion = _.get(req.query, 'ver', ''); //pull reported firmware version from query parameter
         let sqlQuery = 'uspGetDeviceFirmwareManifest';
@@ -57,24 +58,20 @@ module.exports = function (context, req) {
         //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
             if (desiredFirmware.length > 0) {
-                //Blank response; nothing needs to be done (desired firmware == reported firmware)
                 if (desiredFirmware[0]['version'] === reportedVersion) {
                 context.res = {
                     status: 204
                 };
                 } else {
-                    let sasToken = helper.generateSasToken(desiredFirmware[0]['blob_container'], desiredFirmware[0]['blob_name'], null);
-                    
+                    let sasToken = helper.generateSasToken(blobConnection, desiredFirmware[0]['blob_container'], desiredFirmware[0]['blob_name'], null);             
                     let model = models.getApiResponseModelFirmwareManifest();
                     model = _.pick(desiredFirmware[0], _.keys(model));
                     model.uri = sasToken.uri;
-
                     context.res = {
                         status: 200,
                         body: model
                     };
                 }
-
             } else {
                 context.res = {
                     status: 404,
