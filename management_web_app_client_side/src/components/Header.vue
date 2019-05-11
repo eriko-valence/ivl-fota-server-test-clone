@@ -11,8 +11,19 @@
             </b-row>
         </b-container>
         </b-card>
-        
-    </div>
+
+<div>
+  <b-nav tabs>
+    <b-nav-item active><b-link v-bind:to="'firmware'">Firmware</b-link></b-nav-item>
+    <b-nav-item><b-link v-bind:to="'groupmanagement'">Groups</b-link></b-nav-item>
+    <b-nav-item><b-link v-bind:to="'devicemanagement'">Devices</b-link></b-nav-item>
+  </b-nav>
+</div>
+
+<router-view/>
+
+</div>
+
 </template>
 
 <script>

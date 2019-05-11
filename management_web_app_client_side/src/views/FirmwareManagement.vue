@@ -1,6 +1,7 @@
 <template>
 <div>
 <strong>Firmware Management</strong>
+<b-table striped hover :items="items"></b-table>
 <b-button v-b-modal.modal-prevent>Launch demo modal</b-button>
     <!-- Modal Component -->
     <b-modal
@@ -31,7 +32,8 @@ import authentication from '../authentication'
               firmwareVersion: '',
               firmwareSignature: '',
               firmware: [],
-              firmwareUploadBodyMFOX: {}
+              firmwareUploadBodyMFOX: {},
+              items: []
            }
       },
       methods: {
@@ -238,8 +240,9 @@ console.log(this.firmwareUploadBodyMFOX);
         let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
-                .then(function (response) {
+                .then((response) => {
                 console.log('success');
+                this.items = response.data;
                 console.log(response.data);
                 }).catch(function (error) {
                 console.log('error');

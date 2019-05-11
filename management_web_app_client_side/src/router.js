@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './components/Home.vue'
+//import Home from './components/Home.vue'
 import FirmwareManagement from './views/FirmwareManagement.vue'
 import GroupManagement from './views/GroupManagement.vue'
 import DeviceManagement from './views/DeviceManagement.vue'
@@ -11,6 +11,7 @@ Vue.use(Router)
 const router = new Router({
   mode: 'history',
   routes: [
+    /*
     {
       path: '/home',
       name: 'Home',
@@ -18,7 +19,7 @@ const router = new Router({
       meta: {
         requiresAuthentication: true
       }
-    },
+    },*/
     {
       path: '/firmware',
       name: 'FirmwareManagement',
