@@ -8,6 +8,7 @@
 CREATE VIEW [vwDevice] AS
 SELECT 
   RTRIM(t1.Id) as 'DeviceId',
+  RTRIM(t1.ReportedFirmwareVersion) as 'ReportedFirmwareVersion',
   RTRIM(t2.Name) as 'GroupName',
   RTRIM(t3.Version) as 'DesiredFirmwareVersion'
 FROM

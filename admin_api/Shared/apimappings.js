@@ -9,7 +9,8 @@ module.exports = {
         return {
             DeviceId: 'deviceid',
             GroupName: 'group',
-            DesiredFirmwareVersion: 'desired_fw'
+            DesiredFirmwareVersion: 'desired_fw',
+            ReportedFirmwareVersion: 'reported_fw'
         };
     },
     
