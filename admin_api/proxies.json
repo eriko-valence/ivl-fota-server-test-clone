@@ -32,13 +32,13 @@
         },
         "v1-group-put-delete": {
             "matchCondition": {
-                "route": "v1/groups/{group_id}",
+                "route": "v1/groups/{groupid}",
                 "methods": [
                     "PUT",
                     "DELETE"
                 ]
             },
-            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/Group/{group_id}"
+            "backendUri": "https://ivlapiadmin.azurewebsites.net/api/Group/{groupid}"
         },
         "v1-firmware-get-post": {
             "matchCondition": {
