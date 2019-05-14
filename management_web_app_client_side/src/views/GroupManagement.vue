@@ -60,7 +60,8 @@
     <span> {{ddFirmware}} </span>
     <span> {{editGroupFirmware}} </span>
     </div>
-    <b-button @click="editGroup()" pill variant="success">Edit</b-button>
+    <b-button @click="updateGroupInMFOX()" pill variant="success">Edit</b-button>
+    <!--<b-button @click="editGroup()" pill variant="success">Edit</b-button>-->
     <b-button @click="cancelEditGroup()" pill>Cancel</b-button>
   </b-modal>
 
@@ -99,9 +100,12 @@ import authentication from '../authentication'
           return {
               inputGroupName: '',
               editGroupName: '',
+              editGroupId: '',
+              editGroupData: {id: '', name: '', desired_fw_id: ''},
               firmware: [],
               allFirmware: [],
               groupUploadBodyMFOX: {},
+              groupUpdateBodyMFOX: {name: '', desired_fw_id: ''},
               allGroups: [],
               selectedFirmware: '',
               //editGroupFirmware: { text: '', value: ''},
@@ -140,26 +144,37 @@ import authentication from '../authentication'
               console.log('cancel deleting group!!!!');
           },
           editGroupModal(items) {
+              this.groupUpdateBodyMFOX.name = '';
+              this.groupUpdateBodyMFOX.desired_fw_id = '';
               this.editGroupName = items.name;
+              this.editGroupId = items.group_id;
+              this.editGroupFirmware = items.firmware_id;
+              this.editGroupData.id = this.editGroupId;
+              this.editGroupData.name = this.editGroupName;
+              this.editGroupData.desired_fw_id = this.editGroupFirmware;
               //this.editGroupFirmware.text = "text",
               //this.editGroupFirmware.value = "value",
-              this.editGroupFirmware = items.firmware_id;
+
               this.$refs['edit-group-modal'].show()
-              console.log('delete confirm!');
               console.log(items);
           },
           editGroup(items) {
-              this.$refs['edit-group-modal'].hide();
+              //this.$refs['edit-group-modal'].show();
+                          console.log('editGroupFirmware: ' + this.editGroupFirmware);
+            console.log('editGroupName: ' + this.editGroupName);
+                        console.log('editGroupId: ' + this.editGroupId);
+                        console.log(this.editGroupData);
               console.log('updating group!!!!');
           },
           cancelEditGroup(items) {
               this.$refs['edit-group-modal'].hide();
               console.log('cancel updating group!!!!');
           },
+          /*
           editGroup(items) {
               console.log('edit!');
               console.log(items);
-          },
+          },*/
           confirmDeleteGroupError() {
             this.$refs['modal-delete-error'].hide();
             this.firmwareDeleteError = '';
@@ -207,6 +222,31 @@ import authentication from '../authentication'
                     this.groupDeleteError = error;
             });
         },
+        updateGroupInMFOX() {
+            console.log('editGroupFirmware: ' + this.editGroupFirmware);
+            console.log('editGroupName: ' + this.editGroupName);
+            console.log(`group to update: ${this.editGroupId}`);
+            this.$refs['edit-group-modal'].hide()
+            console.log(`Step #8a: Modify group from MFOX...`);
+            console.log('################################################');
+            this.groupUpdateBodyMFOX.name = this.editGroupName;
+            this.groupUpdateBodyMFOX.desired_fw_id = this.editGroupFirmware;
+            console.log('################################################');
+            let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/groups/${this.editGroupId}`;
+            let accessToken = `Bearer ${authentication.getAccessToken()}`;
+            this.axios.put(apiEndpoint,this.groupUpdateBodyMFOX, {headers: {'authorization': accessToken}})
+                    .then( (response) => {
+                    console.log('success');
+                    console.log(`Step #6b: Successfully modified group from MFOX...`);
+                    this.getAllGroupsFromMFOX();
+
+                    }).catch( (error) => {
+                    console.log('error');
+                    console.log(error);
+                    this.$refs['modal-delete-error'].show();
+                    this.groupDeleteError = error;
+            });
+        },
         getAllGroupsFromMFOX() {
 
           console.log(authentication.getAccessToken());
@@ -226,18 +266,18 @@ import authentication from '../authentication'
         },
 
         getAllFirmwareFromMFOX() {
-
+          console.log('getAllFirmwareFromMFOX');
           let apiEndpoint2 = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
           let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
           this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
-                  .then((response) => {                
+                  .then((response) => {       
+                    console.log('successfully retrieved all firmware from azure sql: ');         
                   //populate firmware drop down list array
                   var arrayLength = response.data.length;
                   for (var i = 0; i < arrayLength; i++) {
                       this.ddFirmware.push({ text: response.data[i]['version'], value: response.data[i]['firmware_id'] });
                       //this.ddFirmware.push({ text: response.data[i]['version'], value: response.data[i]['version'] });
                   }
-                  console.log('successfully retrieved all firmware from azure sql: ');
                   console.log(response.data);
                   }).catch(function (error) {
                   console.log('error');
