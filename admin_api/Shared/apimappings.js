@@ -18,7 +18,8 @@ module.exports = {
         return {
             GroupId: 'group_id',
             GroupName: 'name',
-            DesiredFirmwareVersion: 'desired_fw'
+            DesiredFirmwareVersion: 'desired_fw',
+            FirmwareId: 'firmware_id'
         };
     },
 
