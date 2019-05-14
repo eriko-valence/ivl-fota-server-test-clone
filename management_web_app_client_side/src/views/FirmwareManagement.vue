@@ -21,6 +21,15 @@
     <b-button @click="cancelDeleteFirmware()" pill>Cancel</b-button>
   </b-modal>
 
+    <b-modal ref="modal-delete-error" hide-footer>
+
+    <div class="d-block text-center">
+      <h6>An error occured while deleting the firmware</h6>
+      <h6>{{this.firmwareDeleteError}}</h6>
+    </div>
+    <b-button @click="confirmDeleteFirmwareError()" pill>OK</b-button>
+  </b-modal>
+
 <b-button v-b-modal.modal-prevent>Upload New Firmware</b-button>
     <b-modal
       id="modal-prevent"
@@ -58,7 +67,8 @@ import authentication from '../authentication'
                   { key: 'signature', label: 'Signature', sortable: false, class: 'text-center' },
                   { key: 'actionDelete', label: '' }
               ],
-              firmwareVersionToDelete: ''
+              firmwareVersionToDelete: '',
+              firmwareDeleteError: ''
            }
       },
       methods: {
@@ -79,6 +89,12 @@ import authentication from '../authentication'
                  this.handleSubmit()
               }
           },
+
+          confirmDeleteFirmwareError() {
+            this.$refs['modal-delete-error'].hide();
+            this.firmwareDeleteError = '';
+          },
+
           deleteFirmwareConfirm(items) {
               this.$refs['modal-confirm-delete'].show()
               console.log('delete confirmation!');
@@ -193,9 +209,11 @@ import authentication from '../authentication'
                     console.log(`Step #6b: Successfully deleted firmware metadata from MFOX...`);
                     this.getAllFirmwareFromMFOX();
 
-                    }).catch(function (error) {
+                    }).catch( (error) => {
                     console.log('error');
                     console.log(error);
+                    this.$refs['modal-delete-error'].show();
+                    this.firmwareDeleteError = error;
             });
         }
         ,
