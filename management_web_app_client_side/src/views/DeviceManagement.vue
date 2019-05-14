@@ -1,9 +1,9 @@
 <template>
 
 <div>
-    <strong>Device Management</strong>
 
-<b-table striped hover :items="allDevices"></b-table>
+  <b-table  striped hover :items="allDevices" :fields="fields"></b-table>
+
 <b-button v-b-modal.modal-prevent>Create New Device</b-button>
     <b-modal
       id="modal-prevent"
@@ -43,7 +43,14 @@ import authentication from '../authentication'
               deviceUploadBodyMFOX: {},
               allDevices: [],
               selectedGroup: '',
-              ddGroups: []
+              ddGroups: [],
+              fields: [
+                  { key: 'deviceid', label: 'Device ID', sortable: true, sortDirection: 'desc' },
+                  { key: 'group', label: 'Group', sortable: true, class: 'text-center' },
+                  { key: 'desired_fw', label: 'Desired FW Version', sortable: true, class: 'text-center' },
+                  { key: 'reported_fw', label: 'Reported FW Version', sortable: true, class: 'text-center' },
+                  { key: 'last_report_date', label: 'Last Report Date', sortable: true, class: 'text-center' }
+              ],
            }
       },
       methods: {
@@ -94,48 +101,58 @@ import authentication from '../authentication'
             console.log(this.deviceUploadBodyMFOX);
             console.log('################################################');
             this.axios.post(apiEndpoint, this.deviceUploadBodyMFOX, {headers: {'authorization': accessToken}})
-                    .then(function (response) {
+                    .then( (response) => {
                     console.log('success');
                     console.log(`Step #3b: Successfully uploaded group to MFOX...`);
+                    this.getAllDevices();
                     console.log(response.data);
-                    }).catch(function (error) {
+                    }).catch( (error) => {
                     console.log('error');
                     console.log(error);
             });
+        },
+        getAllDevices() {
+          console.log(authentication.getAccessToken());
+          let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/devices';
+          let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
+          this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
+                  .then((response) => {
+                  this.allDevices = response.data;
+                  console.log('successfully retrieved all devices from azure sql: ');
+                  console.log(this.allDevices[0]);
+                  //console.log(response.data);
+                  }).catch(function (error) {
+                  console.log('error');
+                  console.log(error);
+          });
+        },
+        getAllGroups() {
+
+          let apiEndpoint2 = 'https://ivlapiadmin.azurewebsites.net/v1/groups';
+          let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
+          this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
+                  .then((response) => {                
+                  //populate firmware drop down list array
+                  var arrayLength = response.data.length;
+                  for (var i = 0; i < arrayLength; i++) {
+                      this.ddGroups.push({ text: response.data[i]['name'], value: response.data[i]['group_id'] });
+                  }
+                  console.log('successfully retrieved all groups from azure sql: ');
+                  console.log(response.data);
+                  }).catch(function (error) {
+                  console.log('error');
+                  console.log(error);
+          });
+
         }
     },
 
     /* view.js has a set of lifecycle hooks - created, mounted, updated, and destroyed */
     created: function(){
-        console.log(authentication.getAccessToken());
-        let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/devices';
-        let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
-                .then((response) => {
-                this.allDevices = response.data;
-                console.log('successfully retrieved all devices from azure sql: ');
-                console.log(this.allDevices[0]);
-                //console.log(response.data);
-                }).catch(function (error) {
-                console.log('error');
-                console.log(error);
-        });
+        this.getAllDevices();
+        this.getAllGroups();
 
-        let apiEndpoint2 = 'https://ivlapiadmin.azurewebsites.net/v1/groups';
-        let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
-                .then((response) => {                
-                //populate firmware drop down list array
-                var arrayLength = response.data.length;
-                for (var i = 0; i < arrayLength; i++) {
-                    this.ddGroups.push({ text: response.data[i]['name'], value: response.data[i]['group_id'] });
-                }
-                console.log('successfully retrieved all groups from azure sql: ');
-                console.log(response.data);
-                }).catch(function (error) {
-                console.log('error');
-                console.log(error);
-        });
+
     }
   }
 </script>

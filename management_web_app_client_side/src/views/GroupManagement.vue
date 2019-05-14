@@ -1,7 +1,6 @@
 <template>
 
 <div>
-    <strong>Group Management</strong>
 
 <b-table  striped hover :items="allGroups" :fields="fields">
       <template slot="actionDelete" slot-scope="row">
