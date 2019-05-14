@@ -18,12 +18,30 @@
 </b-table>
 <b-button v-b-modal.modal-prevent>Create New Group</b-button>
 
-  <b-modal ref="confirm-delete" hide-footer>
+  <b-modal ref="modal-confirm-delete" hide-footer>
 
     <div class="d-block text-center">
       <h6>Are you sure you want to delete this group?</h6>
     </div>
     <b-button @click="deleteGroup()" pill variant="outline-danger">Delete</b-button>
+    <b-button @click="cancelDeleteGroup()" pill>Cancel</b-button>
+  </b-modal>
+
+  <b-modal ref="modal-delete-error" hide-footer>
+
+    <div class="d-block text-center">
+      <h6>An error occured while deleting the group</h6>
+      <h6>{{this.groupDeleteError}}</h6>
+    </div>
+    <b-button @click="confirmDeleteGroupError()" pill>OK</b-button>
+  </b-modal>
+
+  <b-modal ref="modal-confirm-delete" hide-footer>
+
+    <div class="d-block text-center">
+      <h6>Are you sure you want to delete this group ?</h6>
+    </div>
+    <b-button @click="deleteGroupFromMFOX(groupIdToDelete)" pill variant="outline-danger">Delete</b-button>
     <b-button @click="cancelDeleteGroup()" pill>Cancel</b-button>
   </b-modal>
 
@@ -94,7 +112,9 @@ import authentication from '../authentication'
                   { key: 'desired_fw', label: 'Desired Firmware', sortable: true, class: 'text-center' },
                   { key: 'actionDelete', label: '' },
                   { key: 'actionEdit', label: '' }
-              ]
+              ],
+              groupDeleteError: '',
+              groupIdToDelete: ''
            }
       },
       methods: {
@@ -104,16 +124,19 @@ import authentication from '../authentication'
               this.selectedFirmware = '';
           },
           deleteGroupConfirm(items) {
-              this.$refs['confirm-delete'].show()
-              console.log('delete confirm!');
+
+              this.$refs['modal-confirm-delete'].show()
+              console.log('delete confirmation!');
+              this.groupIdToDelete = items.group_id;
+
               console.log(items);
           },
           deleteGroup(items) {
-              this.$refs['confirm-delete'].hide();
+              this.$refs['modal-confirm-delete'].hide();
               console.log('deleting group!!!!');
           },
           cancelDeleteGroup(items) {
-              this.$refs['confirm-delete'].hide();
+              this.$refs['modal-confirm-delete'].hide();
               console.log('cancel deleting group!!!!');
           },
           editGroupModal(items) {
@@ -136,6 +159,10 @@ import authentication from '../authentication'
           editGroup(items) {
               console.log('edit!');
               console.log(items);
+          },
+          confirmDeleteGroupError() {
+            this.$refs['modal-delete-error'].hide();
+            this.firmwareDeleteError = '';
           },
           handleOk(evt) {
               // Prevent modal from closing
@@ -161,6 +188,64 @@ import authentication from '../authentication'
                  this.handleSubmit()
               }
           },
+          deleteGroupFromMFOX(group_id) {
+            console.log(`group to delete: ${group_id}`);
+            this.$refs['modal-confirm-delete'].hide();
+            console.log(`Step #6a: Delete group from MFOX...`);
+            let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/groups/${group_id}`;
+            let accessToken = `Bearer ${authentication.getAccessToken()}`;
+            this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
+                    .then( (response) => {
+                    console.log('success');
+                    console.log(`Step #6b: Successfully deleted group from MFOX...`);
+                    this.getAllGroupsFromMFOX();
+
+                    }).catch( (error) => {
+                    console.log('error');
+                    console.log(error);
+                    this.$refs['modal-delete-error'].show();
+                    this.groupDeleteError = error;
+            });
+        },
+        getAllGroupsFromMFOX() {
+
+          console.log(authentication.getAccessToken());
+          let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/groups';
+          let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
+          this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
+                  .then((response) => {
+                  this.allGroups = response.data;
+                  console.log('successfully retrieved all groups from azure sql: ');
+                  console.log(this.allGroups[0]);
+                  //console.log(response.data);
+                  }).catch(function (error) {
+                  console.log('error');
+                  console.log(error);
+          });
+
+        },
+
+        getAllFirmwareFromMFOX() {
+
+          let apiEndpoint2 = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
+          let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
+          this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
+                  .then((response) => {                
+                  //populate firmware drop down list array
+                  var arrayLength = response.data.length;
+                  for (var i = 0; i < arrayLength; i++) {
+                      this.ddFirmware.push({ text: response.data[i]['version'], value: response.data[i]['firmware_id'] });
+                      //this.ddFirmware.push({ text: response.data[i]['version'], value: response.data[i]['version'] });
+                  }
+                  console.log('successfully retrieved all firmware from azure sql: ');
+                  console.log(response.data);
+                  }).catch(function (error) {
+                  console.log('error');
+                  console.log(error);
+          });
+
+        },
+
           handleSubmit() {
                 this.groupUploadBodyMFOX = {
                   name: this.inputGroupName,
@@ -191,11 +276,13 @@ import authentication from '../authentication'
             console.log(this.groupUploadBodyMFOX);
             console.log('################################################');
             this.axios.post(apiEndpoint, this.groupUploadBodyMFOX, {headers: {'authorization': accessToken}})
-                    .then(function (response) {
+                    .then( (response) => {
                     console.log('success');
                     console.log(`Step #3b: Successfully uploaded group to MFOX...`);
+                    this.getAllGroupsFromMFOX();
+
                     console.log(response.data);
-                    }).catch(function (error) {
+                    }).catch( (error) => {
                     console.log('error');
                     console.log(error);
             });
@@ -204,6 +291,9 @@ import authentication from '../authentication'
 
     /* view.js has a set of lifecycle hooks - created, mounted, updated, and destroyed */
     created: function(){
+        this.getAllGroupsFromMFOX();
+        this.getAllFirmwareFromMFOX();
+        /*
         console.log(authentication.getAccessToken());
         let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/groups';
         let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
@@ -216,8 +306,8 @@ import authentication from '../authentication'
                 }).catch(function (error) {
                 console.log('error');
                 console.log(error);
-        });
-
+        });*/
+        /*
         let apiEndpoint2 = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
         let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
@@ -234,6 +324,7 @@ import authentication from '../authentication'
                 console.log('error');
                 console.log(error);
         });
+        */
     }
   }
 </script>
