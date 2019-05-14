@@ -1,6 +1,26 @@
 <template>
 <div>
-<b-table striped hover :items="items"></b-table>
+<!--<b-table striped hover :items="items"></b-table>-->
+
+<b-table  striped hover :items="items" :fields="fields">
+      <template slot="actionDelete" slot-scope="row">
+        <b-button @click="deleteFirmwareConfirm(row.item)" pill variant="outline-danger">
+         <!-- <b-button v-b-modal.confirm-delete pill variant="outline-danger">Delete</b-button> -->
+          Delete
+        </b-button>
+      </template>
+</b-table>
+
+
+  <b-modal ref="modal-confirm-delete" hide-footer>
+
+    <div class="d-block text-center">
+      <h6>Are you sure you want to delete this firmware version?</h6>
+    </div>
+    <b-button @click="deleteFirmewareFromMFOX(firmwareVersionToDelete)" pill variant="outline-danger">Delete</b-button>
+    <b-button @click="cancelDeleteFirmware()" pill>Cancel</b-button>
+  </b-modal>
+
 <b-button v-b-modal.modal-prevent>Upload New Firmware</b-button>
     <b-modal
       id="modal-prevent"
@@ -31,7 +51,14 @@ import authentication from '../authentication'
               firmwareSignature: '',
               firmware: [],
               firmwareUploadBodyMFOX: {},
-              items: []
+              items: [],
+              fields: [
+                  { key: 'version', label: 'Version', sortable: true, sortDirection: 'desc' },
+                  { key: 'uri', label: 'URI', sortable: true, class: 'text-center' },
+                  { key: 'signature', label: 'Signature', sortable: false, class: 'text-center' },
+                  { key: 'actionDelete', label: '' }
+              ],
+              firmwareVersionToDelete: ''
            }
       },
       methods: {
@@ -51,6 +78,21 @@ import authentication from '../authentication'
               } else {
                  this.handleSubmit()
               }
+          },
+          deleteFirmwareConfirm(items) {
+              this.$refs['modal-confirm-delete'].show()
+              console.log('delete confirmation!');
+              this.firmwareVersionToDelete = items.firmware_id;
+              //this.deleteFirmewareFromMFOX(items.version);
+              console.log(items.version);
+          },
+          deleteFirmware(items) {
+              this.$refs['modal-confirm-delete'].hide();
+              console.log('deleting firmware!!!!');
+          },
+          cancelDeleteFirmware(items) {
+              this.$refs['modal-confirm-delete'].hide();
+              console.log('cancel deleting firmware!!!!');
           },
           handleSubmit() {
               this.firmware.push(this.firmwareVersion)
@@ -107,15 +149,56 @@ import authentication from '../authentication'
             console.log(this.firmwareUploadBodyMFOX.md5);
             console.log('################################################');
             this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
-                    .then(function (response) {
+                    .then( (response) => {
                     console.log('success');
                     console.log(`Step #3b: Successfully uploaded firmware metadata to MFOX...`);
-                    console.log(response.data);
+                    this.getAllFirmwareFromMFOX();
+
                     }).catch(function (error) {
                     console.log('error');
                     console.log(error);
             });
         },
+
+        getAllFirmwareFromMFOX() {
+
+          console.log(authentication.getAccessToken());
+          let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
+          let accessToken = `Bearer ${authentication.getAccessToken()}`;
+          this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
+                  .then((response) => {
+                  console.log('success');
+                  this.items = response.data;
+                  console.log(response.data);
+                  }).catch(function (error) {
+                  console.log('error');
+                  console.log(error);
+          });
+
+        },
+
+        deleteFirmewareFromMFOX(version) {
+            this.$refs['modal-confirm-delete'].hide();
+            console.log('firmware to delete: ' + version);
+            console.log(`Step #6a: Delete firmware metadata from MFOX...`);
+            let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/api/Firmware/${version}`;
+            let accessToken = `Bearer ${authentication.getAccessToken()}`;
+            console.log('################################################');
+            console.log(this.firmwareUploadBodyMFOX);
+            console.log(this.firmwareUploadBodyMFOX.md5);
+            console.log('################################################');
+            this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
+                    .then( (response) => {
+                    console.log('success');
+                    console.log(`Step #6b: Successfully deleted firmware metadata from MFOX...`);
+                    this.getAllFirmwareFromMFOX();
+
+                    }).catch(function (error) {
+                    console.log('error');
+                    console.log(error);
+            });
+        }
+        ,
         async uploadFirmwareToAzureBlob(uploadUri, fileContent, blobName) {
           console.log(`Step #2a: Upload firmware to azure storage blob container...`);
           console.log(this);
@@ -221,6 +304,8 @@ console.log(this.firmwareUploadBodyMFOX);
 
     /* view.js has a set of lifecycle hooks - created, mounted, updated, and destroyed */
     created: function(){
+        this.getAllFirmwareFromMFOX();
+        /*
         console.log(authentication.getAccessToken());
         let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
@@ -233,6 +318,7 @@ console.log(this.firmwareUploadBodyMFOX);
                 console.log('error');
                 console.log(error);
         });
+        */
     }
   }
 </script>
