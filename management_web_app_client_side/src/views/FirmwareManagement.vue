@@ -1,9 +1,7 @@
 <template>
 <div>
-<strong>Firmware Management</strong>
 <b-table striped hover :items="items"></b-table>
-<b-button v-b-modal.modal-prevent>Launch demo modal</b-button>
-    <!-- Modal Component -->
+<b-button v-b-modal.modal-prevent>Upload New Firmware</b-button>
     <b-modal
       id="modal-prevent"
       ref="modal"
@@ -76,22 +74,9 @@ import authentication from '../authentication'
                 this.firmwareImage = file.name;
                 console.log(`file.name: ${file.name}`);
                 console.log(`firmwareImage: ${this.firmwareImage}`);
-
                 var reader = new FileReader();
                 reader.onload = function(){
-                  //this.firmwareFileContent = reader.result;
-                  //var output = document.getElementById('output');
-                  //output.src = dataURL;
-                  //console.log(this.firmwareFileContent);
-                  //console.log(output);
                 };
-                //reader.readAsDataURL(input.files[0]);
-                //const reader = new FileReader();
-                //reader.onload = e => this.$emit("load", e.target.result);
-                //reader.onload = async e => {
-
-                //}
-                //reader.readAsText(file);
                 reader.readAsBinaryString(file);
         },
         getAzureStorageSasToken(blobName) {
