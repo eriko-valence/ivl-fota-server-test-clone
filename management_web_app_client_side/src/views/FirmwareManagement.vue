@@ -1,12 +1,10 @@
 <template>
   <div>
-
     <b-table  striped hover :items="items" :fields="fields">
       <template slot="actionDelete" slot-scope="row">
         <b-button @click="deleteFirmwareConfirm(row.item)" pill variant="outline-danger">Delete</b-button>
       </template>
     </b-table>
-
     <b-modal ref="modal-confirm-delete" hide-footer>
       <div class="d-block text-center">
         <h6>Are you sure you want to delete this firmware version?</h6>
@@ -14,9 +12,7 @@
       <b-button @click="deleteFirmewareFromMFOX(firmwareVersionToDelete)" pill variant="outline-danger">Delete</b-button>
       <b-button @click="cancelDeleteFirmware()" pill>Cancel</b-button>
     </b-modal>
-
     <b-button v-b-modal.modal-prevent>Upload New Firmware</b-button>
-
     <b-modal ref="modal-delete-error" hide-footer>
       <div class="d-block text-center">
         <h6>An error occured while deleting the firmware</h6>
@@ -24,7 +20,6 @@
       </div>
       <b-button @click="confirmDeleteFirmwareError()" pill>OK</b-button>
     </b-modal>
-
     <b-modal id="modal-prevent" ref="modal" title="Upload File" @ok="handleOk" @shown="handleLoadModal">
       <form @submit.stop.prevent="handleSubmit">
         <b-form-input v-model="firmwareVersion" placeholder="Enter the firmware version"></b-form-input>
@@ -32,31 +27,29 @@
         <input type="file" @change="loadTextFromFile">
       </form>
     </b-modal>
-
   </div>
 </template>
 
 <script>
 import authentication from '../authentication'
-
 export
   default {
     data() {
       return {
-          firmwareVersion: '',
-          firmwareSignature: '',
-          firmware: [],
-          firmwareUploadBodyMFOX: {},
-          items: [],
-          fields: [
-            { key: 'version', label: 'Version', sortable: true, sortDirection: 'desc' },
-            { key: 'uri', label: 'URI', sortable: true, class: 'text-center' },
-            { key: 'signature', label: 'Signature', sortable: false, class: 'text-center' },
-            { key: 'actionDelete', label: '' }
-          ],
-          firmwareVersionToDelete: '',
-          firmwareDeleteError: ''
-        }
+        firmwareVersion: '',
+        firmwareSignature: '',
+        firmware: [],
+        firmwareUploadBodyMFOX: {},
+        items: [],
+        fields: [
+          { key: 'version', label: 'Version', sortable: true, sortDirection: 'desc' },
+          { key: 'uri', label: 'URI', sortable: true, class: 'text-center' },
+          { key: 'signature', label: 'Signature', sortable: false, class: 'text-center' },
+          { key: 'actionDelete', label: '' }
+        ],
+        firmwareVersionToDelete: '',
+        firmwareDeleteError: ''
+      }
     },
     methods: {
       handleLoadModal() {
@@ -111,33 +104,41 @@ export
         reader.readAsBinaryString(file);
       },
       getAzureStorageSasToken(blobName) {
+        console.log('02A - Request a SAS URI for the azure storage blob file upload.') // eslint-disable-line
         let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/upload_uri?name=${blobName}`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         var fileContent = this.firmwareFileContent;
-        //var blobName = this.firmwareImage;
+        console.log('02A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
         .then((response) => {
+          console.log('02B - Received a SAS URI for the azure storage blob file upload. ' + response.status); // eslint-disable-line
+          console.log('02B - SAS URI: ' + response.data.sas_uri); // eslint-disable-line
           this.uploadFirmwareToAzureBlob(response.data.sas_uri, fileContent, blobName);
         }).catch(function (error) {
           console.log(`error: ${error}`); // eslint-disable-line
         });
       },
       uploadToMFOX() {
-        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
+        console.log('04A - Request creation of new firmware release in the MFOX DB.'); // eslint-disable-line
+        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
+        console.log('04A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
           .then( (response) => {
-            console.log(`response: ${response}`); // eslint-disable-line
+            console.log('04B - Created new firmware release in the MFOX DB. ' + response.status); // eslint-disable-line
             this.getAllFirmwareFromMFOX();
           }).catch(function (error) {
             console.log(`error: ${error}`); // eslint-disable-line
         });
       },
       getAllFirmwareFromMFOX() {
-        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
+        console.log('01A - Request list of all firmware versions registered in the MFOX DB.'); // eslint-disable-line
+        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
+        console.log('01A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
           .then((response) => {
+            console.log('01B - Received list of all firmware versions registered in the MFOX DB. ' + response.status); // eslint-disable-line
             this.items = response.data;
           }).catch(function (error) {
             console.log(`error: ${error}`); // eslint-disable-line
@@ -145,12 +146,14 @@ export
       },
 
       deleteFirmewareFromMFOX(version) {
+        console.log('04A - Request deletion of firmware release from the MFOX DB.'); // eslint-disable-line
         this.$refs['modal-confirm-delete'].hide();
-        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/api/Firmware/${version}`;
+        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/firmware/${version}`;
+        console.log('04A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
         .then( (response) => {
-          console.log(`response: ${response}`); // eslint-disable-line
+          console.log('04B - Deleted firmware release from the MFOX DB. ' + response.status); // eslint-disable-line
           this.getAllFirmwareFromMFOX();
         }).catch( (error) => {
           console.log(`error: ${error}`); // eslint-disable-line
@@ -159,6 +162,8 @@ export
         });
       },
       async uploadFirmwareToAzureBlob(uploadUri, fileContent) {
+        console.log('03A - Request upload of firmware binary to azure storage blob container.'); // eslint-disable-line
+        console.log('03A - API Endpoint: ' + uploadUri); // eslint-disable-line
         const {
           AnonymousCredential,
           StorageURL,
@@ -166,7 +171,6 @@ export
           BlockBlobURL,
           Aborter
         } = require("@azure/storage-blob");
-        //const account = "ivlapidevice916d";  //TODO - move to config
         const anonymousCredential = new AnonymousCredential();
         const pipeline = StorageURL.newPipeline(anonymousCredential);
         const serviceURL = new ServiceURL(
@@ -174,17 +178,14 @@ export
           uploadUri,
           pipeline
         );
-        //let containerName = "fota";
-        //let url = 'https://ivlapidevice916d.blob.core.windows.net';
-        //const containerURL = ContainerURL.fromServiceURL(serviceURL, containerName);
         const content = fileContent;
-        //const blobURL = BlobURL.fromContainerURL(containerURL, blobName);
         const blockBlobURL = BlockBlobURL.fromBlobURL(serviceURL);
         const uploadBlobResponse = await blockBlobURL.upload(
           Aborter.none,
           content,
           content.size
         );
+        console.log('03B - Uploaded firmware binary to azure storage blob container. ' + uploadBlobResponse._response.status); // eslint-disable-line
         //let md5_b64 = btoa(String.fromCharCode.apply(null, uploadBlobResponse.contentMD5));
         let md5_hex = Buffer.from(uploadBlobResponse.contentMD5).toString('hex');
         this.firmwareUploadBodyMFOX.md5 = md5_hex;
