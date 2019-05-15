@@ -14,9 +14,9 @@
         </b-card>
 
 <b-nav class="nav-tabs">
-  <b-nav-item v-bind:active="tab === 1" v-on:click="tab = 1"><b-link v-bind:to="'firmware'">Firmware</b-link></b-nav-item>
-  <b-nav-item v-bind:active="tab === 2" v-on:click="tab = 2"><b-link :active="true" v-bind:to="'groupmanagement'">Groups</b-link></b-nav-item>
-  <b-nav-item v-bind:active="tab === 3" v-on:click="tab = 3"><b-link :active="true" v-bind:to="'devicemanagement'">Devices</b-link></b-nav-item>
+  <b-nav-item v-bind:active="tab === 'FirmwareManagement'" v-on:click="tab = 'FirmwareManagement'"><b-link v-bind:to="'firmware'">Firmware</b-link></b-nav-item>
+  <b-nav-item v-bind:active="tab === 'GroupManagement'" v-on:click="tab = 'GroupManagement'"><b-link :active="true" v-bind:to="'groupmanagement'">Groups</b-link></b-nav-item>
+  <b-nav-item v-bind:active="tab === 'DeviceManagement'" v-on:click="tab = 'DeviceManagement'"><b-link :active="true" v-bind:to="'devicemanagement'">Devices</b-link></b-nav-item>
 </b-nav>
 <router-view/>
   </div>
@@ -29,7 +29,7 @@ export default {
     data () {
     return {
       msg: "Signing in...",
-      tab: 1
+      tab: this.getCurrentRouteName()
     }
   },
   async created () {
@@ -54,6 +54,9 @@ export default {
     },
     getProfile() {
       authentication.getUserProfile();
+    },
+    getCurrentRouteName() {
+         return this._routerRoot._route.name;
     }
   }
 }
