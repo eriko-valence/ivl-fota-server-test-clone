@@ -1,342 +1,199 @@
 <template>
-<div>
-<!--<b-table striped hover :items="items"></b-table>-->
+  <div>
 
-<b-table  striped hover :items="items" :fields="fields">
+    <b-table  striped hover :items="items" :fields="fields">
       <template slot="actionDelete" slot-scope="row">
-        <b-button @click="deleteFirmwareConfirm(row.item)" pill variant="outline-danger">
-         <!-- <b-button v-b-modal.confirm-delete pill variant="outline-danger">Delete</b-button> -->
-          Delete
-        </b-button>
+        <b-button @click="deleteFirmwareConfirm(row.item)" pill variant="outline-danger">Delete</b-button>
       </template>
-</b-table>
+    </b-table>
 
+    <b-modal ref="modal-confirm-delete" hide-footer>
+      <div class="d-block text-center">
+        <h6>Are you sure you want to delete this firmware version?</h6>
+      </div>
+      <b-button @click="deleteFirmewareFromMFOX(firmwareVersionToDelete)" pill variant="outline-danger">Delete</b-button>
+      <b-button @click="cancelDeleteFirmware()" pill>Cancel</b-button>
+    </b-modal>
 
-  <b-modal ref="modal-confirm-delete" hide-footer>
-
-    <div class="d-block text-center">
-      <h6>Are you sure you want to delete this firmware version?</h6>
-    </div>
-    <b-button @click="deleteFirmewareFromMFOX(firmwareVersionToDelete)" pill variant="outline-danger">Delete</b-button>
-    <b-button @click="cancelDeleteFirmware()" pill>Cancel</b-button>
-  </b-modal>
+    <b-button v-b-modal.modal-prevent>Upload New Firmware</b-button>
 
     <b-modal ref="modal-delete-error" hide-footer>
+      <div class="d-block text-center">
+        <h6>An error occured while deleting the firmware</h6>
+        <h6>{{this.firmwareDeleteError}}</h6>
+      </div>
+      <b-button @click="confirmDeleteFirmwareError()" pill>OK</b-button>
+    </b-modal>
 
-    <div class="d-block text-center">
-      <h6>An error occured while deleting the firmware</h6>
-      <h6>{{this.firmwareDeleteError}}</h6>
-    </div>
-    <b-button @click="confirmDeleteFirmwareError()" pill>OK</b-button>
-  </b-modal>
-
-<b-button v-b-modal.modal-prevent>Upload New Firmware</b-button>
-    <b-modal
-      id="modal-prevent"
-      ref="modal"
-      title="Upload File"
-      @ok="handleOk"
-      @shown="handleLoadModal"
-    >
+    <b-modal id="modal-prevent" ref="modal" title="Upload File" @ok="handleOk" @shown="handleLoadModal">
       <form @submit.stop.prevent="handleSubmit">
         <b-form-input v-model="firmwareVersion" placeholder="Enter the firmware version"></b-form-input>
         <b-form-textarea rows="5" max-rows="10" v-model="firmwareSignature" placeholder="Enter the firmware signature"></b-form-textarea>
         <input type="file" @change="loadTextFromFile">
       </form>
     </b-modal>
-</div>
+
+  </div>
 </template>
 
 <script>
-
 import authentication from '../authentication'
- 
-  //import axios from 'axios'
-  export default {
-    /* define data properties */
-      data() {
-          return {
-              firmwareVersion: '',
-              firmwareSignature: '',
-              firmware: [],
-              firmwareUploadBodyMFOX: {},
-              items: [],
-              fields: [
-                  { key: 'version', label: 'Version', sortable: true, sortDirection: 'desc' },
-                  { key: 'uri', label: 'URI', sortable: true, class: 'text-center' },
-                  { key: 'signature', label: 'Signature', sortable: false, class: 'text-center' },
-                  { key: 'actionDelete', label: '' }
-              ],
-              firmwareVersionToDelete: '',
-              firmwareDeleteError: ''
-           }
-      },
-      methods: {
-          handleLoadModal() {
-              console.log('handleLoadModal');
-              this.firmwareVersion = '';
-              this.firmwareSignature = '';
-              this.firmwareImage = '';
-              this.firmwareFileContent = '';
-          },
-          handleOk(evt) {
-              // Prevent modal from closing
-              console.log('handleOk');
-              evt.preventDefault()
-              if (!this.firmwareVersion) {
-                  alert('Please enter the firmware version')
-              } else {
-                 this.handleSubmit()
-              }
-          },
 
-          confirmDeleteFirmwareError() {
-            this.$refs['modal-delete-error'].hide();
-            this.firmwareDeleteError = '';
-          },
-
-          deleteFirmwareConfirm(items) {
-              this.$refs['modal-confirm-delete'].show()
-              console.log('delete confirmation!');
-              this.firmwareVersionToDelete = items.firmware_id;
-              //this.deleteFirmewareFromMFOX(items.version);
-              console.log(items.version);
-          },
-          deleteFirmware(items) {
-              this.$refs['modal-confirm-delete'].hide();
-              console.log('deleting firmware!!!!');
-          },
-          cancelDeleteFirmware(items) {
-              this.$refs['modal-confirm-delete'].hide();
-              console.log('cancel deleting firmware!!!!');
-          },
-          handleSubmit() {
-              this.firmware.push(this.firmwareVersion)
-
-                this.firmwareUploadBodyMFOX = {
-                  version: this.firmwareVersion,
-                  signature : this.firmwareSignature,
-                  image    : this.firmwareImage,
-                  md5 : null
-                };
-                this.getAzureStorageSasToken(this.firmwareImage);
-
-              this.handleLoadModal()
-              this.$nextTick(() => {
-                this.$refs.modal.hide()
-              })
-         },
-         async loadTextFromFile(ev) {
-                this.firmwareFileContent = ev.target.files[0];
-                const file = ev.target.files[0];
-                this.firmwareImage = file.name;
-                console.log(`file.name: ${file.name}`);
-                console.log(`firmwareImage: ${this.firmwareImage}`);
-                var reader = new FileReader();
-                reader.onload = function(){
-                };
-                reader.readAsBinaryString(file);
-        },
-        getAzureStorageSasToken(blobName) {
-            let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/upload_uri?name=${blobName}`;
-            let accessToken = `Bearer ${authentication.getAccessToken()}`;
-            console.log(`Step #1a: Acquire azure storage sas token for blob ${blobName}....`);
-            console.log(`Step #1b: Api endpoint: ${apiEndpoint}`);
-            console.log(`Step #1c: this.firmwareFileContent: ${this.firmwareFileContent}`);
-            var fileContent = this.firmwareFileContent;
-            var blobName = this.firmwareImage;
-            this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
-                    .then((response) => {
-                    console.log(`Step #1d: this.firmwareFileContent: ${fileContent}`);
-                    console.log(`Step #1e: Successfully acquired sas token: ${response.data.sas_uri}`);
-                    this.uploadFirmwareToAzureBlob(response.data.sas_uri, fileContent, blobName);
-                    //this.uploadToMFOX();
-                    }).catch(function (error) {
-                    console.log('error');
-                    console.log(error);
-            });
-        },
-        uploadToMFOX() {
-            console.log(`Step #3a: Upload firmware metadata to MFOX...`);
-            let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
-            let accessToken = `Bearer ${authentication.getAccessToken()}`;
-            console.log('################################################');
-            console.log(this.firmwareUploadBodyMFOX);
-            console.log(this.firmwareUploadBodyMFOX.md5);
-            console.log('################################################');
-            this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
-                    .then( (response) => {
-                    console.log('success');
-                    console.log(`Step #3b: Successfully uploaded firmware metadata to MFOX...`);
-                    this.getAllFirmwareFromMFOX();
-
-                    }).catch(function (error) {
-                    console.log('error');
-                    console.log(error);
-            });
-        },
-
-        getAllFirmwareFromMFOX() {
-
-          console.log(authentication.getAccessToken());
-          let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
-          let accessToken = `Bearer ${authentication.getAccessToken()}`;
-          this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
-                  .then((response) => {
-                  console.log('success');
-                  this.items = response.data;
-                  console.log(response.data);
-                  }).catch(function (error) {
-                  console.log('error');
-                  console.log(error);
-          });
-
-        },
-
-        deleteFirmewareFromMFOX(version) {
-            this.$refs['modal-confirm-delete'].hide();
-            console.log('firmware to delete: ' + version);
-            console.log(`Step #6a: Delete firmware metadata from MFOX...`);
-            let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/api/Firmware/${version}`;
-            let accessToken = `Bearer ${authentication.getAccessToken()}`;
-            console.log('################################################');
-            console.log(this.firmwareUploadBodyMFOX);
-            console.log(this.firmwareUploadBodyMFOX.md5);
-            console.log('################################################');
-            this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
-                    .then( (response) => {
-                    console.log('success');
-                    console.log(`Step #6b: Successfully deleted firmware metadata from MFOX...`);
-                    this.getAllFirmwareFromMFOX();
-
-                    }).catch( (error) => {
-                    console.log('error');
-                    console.log(error);
-                    this.$refs['modal-delete-error'].show();
-                    this.firmwareDeleteError = error;
-            });
-        }
-        ,
-        async uploadFirmwareToAzureBlob(uploadUri, fileContent, blobName) {
-          console.log(`Step #2a: Upload firmware to azure storage blob container...`);
-          console.log(this);
-
-                const {
-                AnonymousCredential,
-                StorageURL,
-                ServiceURL,
-                ContainerURL,
-                BlobURL,
-                BlockBlobURL,
-                Aborter
-                } = require("@azure/storage-blob");
-
-                //let upload_uri = `https://ivlapiadmin.azurewebsites.net/v1/upload_uri?name=${blobName}`;
-
-                // Enter your storage account name and shared key
-                const account = "ivlapidevice916d";
-
-                // Use SharedKeyCredential with storage account and account key
-                //const sharedKeyCredential = new sharedKeyCredential('test', 'test');
-                //const sharedKeyCredential = new SharedKeyCredential(account, accountKey);
-                const anonymousCredential = new AnonymousCredential();
-                const pipeline = StorageURL.newPipeline(anonymousCredential);
-
-                //let blobUrlSas = 'https://ivlapidevice916d.blob.core.windows.net/fota?st=2019-05-07T17%3A09%3A13Z&se=2019-05-08T17%3A09%3A13Z&sp=racwl&sv=2018-03-28&sr=c&sig=G8hvIiYFJmEVLJUGHSv45FAjoM71FrvTyWJkLsz9LpQ%3D';
-                //uploadUri = 'https://ivlapidevice916d.blob.core.windows.net/fota?st=2019-05-08T17%3A23%3A56Z&se=2019-05-09T17%3A23%3A56Z&sp=racwl&sv=2018-03-28&sr=c&sig=%2FYqYsF%2BiWm18xHGMJNFksGqNwM8Qm4Gigcs3FQ%2FQlq4%3D';
-                //uploadUri =        'https://ivlapidevice916d.blob.core.windows.net/fota?st=2019-05-08T20%3A55%3A11Z&se=2019-05-08T21%3A55%3A11Z&sp=racwl&sv=2018-03-28&sr=c&sig=Jog7XGBVnCE%2FLh1%2Bj3BwVZKxHqsQ3a7tAMxVTiD%2BEBM%3D';
-                //uploadUri = 'https://ivlapidevice916d.blob.core.windows.net/fota/fota/01.json?st=2019-05-08T22%3A56%3A37Z&se=2019-05-09T22%3A56%3A37Z&sp=racwl&sv=2018-03-28&sr=b&sig=pBCqqYYj%2BvuDiGoPzHTqqoIpNSg3ah2qRdDgRzdzcqs%3D';
-
-                const serviceURL = new ServiceURL(
-                    // When using AnonymousCredential, following url should include a valid SAS or support public access
-                    uploadUri,
-                    pipeline
-                );
-
-                //const reader = new FileReader();
-                //reader.onload = e => this.$emit("load", e.target.result);
-                //console.log(`this.firmwareImage: ${this.firmwareImage}`);
-                //reader.onload = async e => {
-                  //var text = reader.result;
-
-                  let containerName = "fota";
-                  let url = 'https://ivlapidevice916d.blob.core.windows.net';
-                  const containerURL = ContainerURL.fromServiceURL(serviceURL, containerName);
-                  const content = fileContent;
-                  //const blobName = blobImageName;
-                  const blobURL = BlobURL.fromContainerURL(containerURL, blobName);
-                  const blockBlobURL = BlockBlobURL.fromBlobURL(serviceURL);
-                  console.log('------------------------------------');
-                  console.log(`uploadUri: ${uploadUri}`);
-                  console.log(`serviceURL:  ${serviceURL}`);
-                                    console.log(`serviceURL:  ${serviceURL.url}`);
-                                    console.log(serviceURL);
-                  console.log(`blobName: ${blobName}`)
-                  console.log(`containerName: ${containerName}`);
-                  console.log(`content: ${content}`);
-                  console.log(content);
-                  console.log(`containerURL: ${containerURL.url}`);
-                  console.log(`blobURL: ${blobURL.url}`);
-                  console.log(blobURL);
-                  console.log(`blockBlobURL: ${blockBlobURL.url}`);
-                  console.log(blockBlobURL);
-                  console.log('------------------------------------');
-                  const uploadBlobResponse = await blockBlobURL.upload(
-                    //const uploadBlobResponse = await serviceURL.upload(
-                      Aborter.none,
-                      content,
-                      content.size
-                );
-
-                //}
-                console.log('----------------------------');
-                //var string = btoa(new TextDecoder('windows-1251').decode(uploadBlobResponse.contentMD5));
-
-//var u8 = new Uint8Array([65, 66, 67, 68]);
-//var decoder = new TextDecoder('utf8');
-//var b64encoded = btoa(decoder.decode(uploadBlobResponse.contentMD5));
-//var str2 = decodeURIComponent(escape(window.atob(uploadBlobResponse.contentMD5)));
-//console.log(uploadBlobResponse);
-
-let md5_b64 = btoa(String.fromCharCode.apply(null, uploadBlobResponse.contentMD5));
-let md5_hex = Buffer.from(uploadBlobResponse.contentMD5).toString('hex');
-
-console.log(this.firmwareUploadBodyMFOX);
-this.firmwareUploadBodyMFOX.md5 = md5_hex;
-console.log(this.firmwareUploadBodyMFOX);
-
-                console.log('----------------------------');
-                //reader.readAsText(this.firmwareFileContent);
-
-                // Create a blob
-
-                //console.log(
-                //    `Upload block blob ${blobName} successfully`,
-                //    uploadBlobResponse.requestId
-                //);
-                console.log(`Step #2b: Succssfully uploaded firmware to azure storage blob container... ${uploadBlobResponse.requestId}`);
-                this.uploadToMFOX();
-
+export
+  default {
+    data() {
+      return {
+          firmwareVersion: '',
+          firmwareSignature: '',
+          firmware: [],
+          firmwareUploadBodyMFOX: {},
+          items: [],
+          fields: [
+            { key: 'version', label: 'Version', sortable: true, sortDirection: 'desc' },
+            { key: 'uri', label: 'URI', sortable: true, class: 'text-center' },
+            { key: 'signature', label: 'Signature', sortable: false, class: 'text-center' },
+            { key: 'actionDelete', label: '' }
+          ],
+          firmwareVersionToDelete: '',
+          firmwareDeleteError: ''
         }
     },
-
-    /* view.js has a set of lifecycle hooks - created, mounted, updated, and destroyed */
-    created: function(){
-        this.getAllFirmwareFromMFOX();
-        /*
-        console.log(authentication.getAccessToken());
+    methods: {
+      handleLoadModal() {
+        this.firmwareVersion = '';
+        this.firmwareSignature = '';
+        this.firmwareImage = '';
+        this.firmwareFileContent = '';
+      },
+      handleOk(evt) {
+        evt.preventDefault()
+        if (!this.firmwareVersion) {
+            alert('Please enter the firmware version')
+        } else {
+            this.handleSubmit()
+        }
+      },
+      confirmDeleteFirmwareError() {
+        this.$refs['modal-delete-error'].hide();
+        this.firmwareDeleteError = '';
+      },
+      deleteFirmwareConfirm(items) {
+        this.$refs['modal-confirm-delete'].show()
+        this.firmwareVersionToDelete = items.firmware_id;
+      },
+      deleteFirmware() {
+        this.$refs['modal-confirm-delete'].hide();
+      },
+      cancelDeleteFirmware() {
+        this.$refs['modal-confirm-delete'].hide();
+      },
+      handleSubmit() {
+        this.firmware.push(this.firmwareVersion)
+        this.firmwareUploadBodyMFOX = {
+          version: this.firmwareVersion,
+          signature : this.firmwareSignature,
+          image    : this.firmwareImage,
+          md5 : null
+        };
+        this.getAzureStorageSasToken(this.firmwareImage);
+        this.handleLoadModal()
+        this.$nextTick(() => {
+          this.$refs.modal.hide()
+        })
+      },
+      async loadTextFromFile(ev) {
+        this.firmwareFileContent = ev.target.files[0];
+        const file = ev.target.files[0];
+        this.firmwareImage = file.name;
+        var reader = new FileReader();
+        reader.onload = function(){
+        };
+        reader.readAsBinaryString(file);
+      },
+      getAzureStorageSasToken(blobName) {
+        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/upload_uri?name=${blobName}`;
+        let accessToken = `Bearer ${authentication.getAccessToken()}`;
+        var fileContent = this.firmwareFileContent;
+        //var blobName = this.firmwareImage;
+        this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
+        .then((response) => {
+          this.uploadFirmwareToAzureBlob(response.data.sas_uri, fileContent, blobName);
+        }).catch(function (error) {
+          console.log(`error: ${error}`); // eslint-disable-line
+        });
+      },
+      uploadToMFOX() {
+        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
+        let accessToken = `Bearer ${authentication.getAccessToken()}`;
+        this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
+          .then( (response) => {
+            console.log(`response: ${response}`); // eslint-disable-line
+            this.getAllFirmwareFromMFOX();
+          }).catch(function (error) {
+            console.log(`error: ${error}`); // eslint-disable-line
+        });
+      },
+      getAllFirmwareFromMFOX() {
         let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/api/Firmware';
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
-                .then((response) => {
-                console.log('success');
-                this.items = response.data;
-                console.log(response.data);
-                }).catch(function (error) {
-                console.log('error');
-                console.log(error);
+          .then((response) => {
+            this.items = response.data;
+          }).catch(function (error) {
+            console.log(`error: ${error}`); // eslint-disable-line
         });
-        */
-    }
-  }
+      },
+
+      deleteFirmewareFromMFOX(version) {
+        this.$refs['modal-confirm-delete'].hide();
+        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/api/Firmware/${version}`;
+        let accessToken = `Bearer ${authentication.getAccessToken()}`;
+        this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
+        .then( (response) => {
+          console.log(`response: ${response}`); // eslint-disable-line
+          this.getAllFirmwareFromMFOX();
+        }).catch( (error) => {
+          console.log(`error: ${error}`); // eslint-disable-line
+          this.$refs['modal-delete-error'].show();
+          this.firmwareDeleteError = error;
+        });
+      },
+      async uploadFirmwareToAzureBlob(uploadUri, fileContent) {
+        const {
+          AnonymousCredential,
+          StorageURL,
+          ServiceURL,
+          BlockBlobURL,
+          Aborter
+        } = require("@azure/storage-blob");
+        //const account = "ivlapidevice916d";  //TODO - move to config
+        const anonymousCredential = new AnonymousCredential();
+        const pipeline = StorageURL.newPipeline(anonymousCredential);
+        const serviceURL = new ServiceURL(
+          // When using AnonymousCredential, following url should include a valid SAS or support public access
+          uploadUri,
+          pipeline
+        );
+        //let containerName = "fota";
+        //let url = 'https://ivlapidevice916d.blob.core.windows.net';
+        //const containerURL = ContainerURL.fromServiceURL(serviceURL, containerName);
+        const content = fileContent;
+        //const blobURL = BlobURL.fromContainerURL(containerURL, blobName);
+        const blockBlobURL = BlockBlobURL.fromBlobURL(serviceURL);
+        const uploadBlobResponse = await blockBlobURL.upload(
+          Aborter.none,
+          content,
+          content.size
+        );
+        //let md5_b64 = btoa(String.fromCharCode.apply(null, uploadBlobResponse.contentMD5));
+        let md5_hex = Buffer.from(uploadBlobResponse.contentMD5).toString('hex');
+        this.firmwareUploadBodyMFOX.md5 = md5_hex;
+        this.uploadToMFOX();
+      }
+  },
+  created:
+    function(){
+        this.getAllFirmwareFromMFOX();
+    }
+  }
 </script>
