@@ -26,7 +26,8 @@ export
         allFirmware: [],
         deviceUploadBodyMFOX: {},
         allDevices: [],
-        selectedGroup: '',
+        selectedGroup: null,
+        editGroup: [],
         ddGroups: [],
         fields: [
           { key: 'deviceid', label: 'Device ID', sortable: true, sortDirection: 'desc' },
@@ -40,7 +41,7 @@ export
     methods: {
       handleLoadModal() {
         this.inputDeviceId = '';
-        this.selectedGroup = '';
+        this.selectedGroup = null;
       },
       handleOk(evt) {
         evt.preventDefault()
@@ -62,15 +63,6 @@ export
           this.$refs.modal.hide()
         })
         this.uploadToMFOX();
-      },
-      async loadTextFromFile(ev) {
-        this.firmwareFileContent = ev.target.files[0];
-        const file = ev.target.files[0];
-        this.firmwareImage = file.name;
-        var reader = new FileReader();
-        reader.onload = function(){
-        };
-        reader.readAsBinaryString(file);
       },
       uploadToMFOX() {
         let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/devices';

@@ -73,7 +73,7 @@ export
         groupUploadBodyMFOX: {},
         groupUpdateBodyMFOX: {name: '', desired_fw_id: ''},
         allGroups: [],
-        selectedFirmware: '',
+        selectedFirmware: null,
         //editGroupFirmware: { text: '', value: ''},
         editGroupFirmware: [],
         ddFirmware: [],
@@ -90,7 +90,7 @@ export
     methods: {
       handleLoadModal() {
           this.inputGroupName = '';
-          this.selectedFirmware = '';
+          this.selectedFirmware = null;
       },
       deleteGroupConfirm(items) {
           this.$refs['modal-confirm-delete'].show()
