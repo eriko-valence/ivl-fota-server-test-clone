@@ -1,7 +1,11 @@
 <template>
   <div>
 
-    <b-table  striped hover :items="allGroups" :fields="fields">
+    <b-table :busy="isLoading" striped hover :items="allGroups" :fields="fields">
+      <div slot="table-busy" class="text-center text-danger my-2">
+        <b-spinner class="align-middle"></b-spinner>
+        <strong>Loading...</strong>
+      </div>
       <template slot="actionDelete" slot-scope="row">
         <b-button @click="deleteGroupConfirm(row.item)" pill variant="outline-danger">Delete</b-button>
       </template>
@@ -84,7 +88,8 @@ export
             { key: 'actionEdit', label: '' }
         ],
         groupDeleteError: '',
-        groupIdToDelete: ''
+        groupIdToDelete: '',
+        isLoading: false,
       }
     },
     methods: {
@@ -169,12 +174,15 @@ export
         });
       },
       getAllGroupsFromMFOX() {
+        this.toggleLoading(true);
         let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/groups';
         let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
           .then((response) => {
+            this.toggleLoading(false);
             this.allGroups = response.data;
           }).catch(function (error) {
+            this.toggleLoading(false);
             console.log(`error: ${error}`); // eslint-disable-line
           });
       },
@@ -222,6 +230,9 @@ export
           }).catch( (error) => {
             console.log(`error: ${error}`); // eslint-disable-line
           });
+      },
+      toggleLoading(state) {
+        this.isLoading = state;
       }
     },// methods
     created:

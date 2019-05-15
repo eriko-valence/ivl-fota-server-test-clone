@@ -1,6 +1,10 @@
 <template>
   <div>
-    <b-table  striped hover :items="items" :fields="fields">
+    <b-table :busy="isLoading" striped hover :items="items" :fields="fields">
+      <div slot="table-busy" class="text-center text-danger my-2">
+        <b-spinner class="align-middle"></b-spinner>
+        <strong>Loading...</strong>
+      </div>
       <template slot="actionDelete" slot-scope="row">
         <b-button @click="deleteFirmwareConfirm(row.item)" pill variant="outline-danger">Delete</b-button>
       </template>
@@ -48,7 +52,8 @@ export
           { key: 'actionDelete', label: '' }
         ],
         firmwareVersionToDelete: '',
-        firmwareDeleteError: ''
+        firmwareDeleteError: '',
+        isLoading: false,
       }
     },
     methods: {
@@ -132,15 +137,18 @@ export
         });
       },
       getAllFirmwareFromMFOX() {
+        this.toggleLoading(true);
         console.log('01A - Request list of all firmware versions registered in the MFOX DB.'); // eslint-disable-line
         let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         console.log('01A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
           .then((response) => {
+            this.toggleLoading(false);
             console.log('01B - Received list of all firmware versions registered in the MFOX DB. ' + response.status); // eslint-disable-line
             this.items = response.data;
           }).catch(function (error) {
+            this.toggleLoading(false);
             console.log(`error: ${error}`); // eslint-disable-line
         });
       },
@@ -190,6 +198,9 @@ export
         let md5_hex = Buffer.from(uploadBlobResponse.contentMD5).toString('hex');
         this.firmwareUploadBodyMFOX.md5 = md5_hex;
         this.uploadToMFOX();
+      },
+      toggleLoading(state) {
+        this.isLoading = state;
       }
   },
   created:

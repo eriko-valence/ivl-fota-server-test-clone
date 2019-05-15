@@ -1,6 +1,11 @@
 <template>
   <div>
-    <b-table  striped hover :items="allDevices" :fields="fields"></b-table>
+    <b-table :busy="isLoading" striped hover :items="allDevices" :fields="fields">
+      <div slot="table-busy" class="text-center text-danger my-2">
+        <b-spinner class="align-middle"></b-spinner>
+        <strong>Loading...</strong>
+      </div>
+    </b-table>
     <b-button v-b-modal.modal-prevent>Create New Device</b-button>
     <b-modal id="modal-prevent" ref="modal" title="Upload File" @ok="handleOk" @shown="handleLoadModal">
       <form @submit.stop.prevent="handleSubmit">
@@ -36,6 +41,7 @@ export
           { key: 'reported_fw', label: 'Reported FW Version', sortable: true, class: 'text-center' },
           { key: 'last_report_date', label: 'Last Report Date', sortable: true, class: 'text-center' }
         ],
+        isLoading: false,
       }
     },
     methods: {
@@ -76,12 +82,16 @@ export
         });
       },
       getAllDevices() {
+        console.log('get all devices');
+        this.toggleLoading(true);
         let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/devices';
         let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
           .then((response) => {
+            this.toggleLoading(false);
             this.allDevices = response.data;
           }).catch(function (error) {
+            this.toggleLoading(false);
             console.log(`error: ${error}`); // eslint-disable-line
         });
       },
@@ -98,6 +108,9 @@ export
         }).catch(function (error) {
           console.log(`error: ${error}`); // eslint-disable-line
         });
+      },
+      toggleLoading(state) {
+        this.isLoading = state;
       }
     },
     created:
