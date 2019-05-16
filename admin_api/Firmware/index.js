@@ -10,7 +10,6 @@ const models = require('../Shared/models');
 
 module.exports =  function (context, req) {
     let requestMethod = _.get(req, 'method', ''); 
-    console.log(requestMethod);
     let sortBy = _.get(req.query, 'sort_by', ''); //example --> sort_by=desc(deviceid)
     let secret = process.env.AzureADClientSecret;
     let clientId = process.env.AzureADClientID;
@@ -39,9 +38,20 @@ module.exports =  function (context, req) {
     });
 
    function getFirmware(connection) {
+        let error = false;
         let sqlQuery = 'uspGetAllFirmware';
         request = new Request(sqlQuery, function(err) {
-            if (err) { console.log(err); }
+            if (err) { 
+                console.log(err.message);
+                error = true;
+                context.res = {
+                    status: 500,             
+                    body: {
+                        code: 500,
+                        error: 'An error occured while retrieving firmware from the database.'
+                    }
+                };
+            }
         });
         let firmware = [];
         let apiFieldMappings = apihelper.getFirmwareApiFieldMappings();
@@ -75,7 +85,7 @@ module.exports =  function (context, req) {
                     status: 200,
                     body: apiResponseBody
                 };
-            } else {
+            } else if (!error) {
                 context.res = {
                     status: 404,
                     body: 'No firmware found on server side'
@@ -87,6 +97,7 @@ module.exports =  function (context, req) {
     }
 
     function createFirmware(connection) {
+        let error = false;
         let version = _.get(req.body, 'version', null);
         let image = _.get(req.body, 'image', null);
         let signature = _.get(req.body, 'signature', null);
@@ -94,7 +105,17 @@ module.exports =  function (context, req) {
         if (version !== null && image !== null && signature !== null && md5 !== null) {
             let sqlQuery = 'uspCreateFirmware';
             request = new Request(sqlQuery, function(err) {
-                if (err) { console.log(err); }
+                if (err) { 
+                    console.log(err.message);
+                    error = true;
+                    context.res = {
+                        status: 500,             
+                        body: {
+                            code: 500,
+                            error: 'An error occured while creating firmware in the database.'
+                        }
+                    };
+                }
             });
             request.addParameter('version', TYPES.NChar, version);
             request.addParameter('signature', TYPES.NChar, signature);
@@ -118,10 +139,10 @@ module.exports =  function (context, req) {
                     status: 201,
                     body: firmware[0]
                 };
-            } else {
+            } else if (!error) {
                 context.res = {
-                    status: 404,
-                    body: 'No firmware found on server side'
+                    status: 500,
+                    body: 'Created firmware not found in the database'
                 };
             }
             context.done();
@@ -129,7 +150,7 @@ module.exports =  function (context, req) {
             connection.callProcedure(request);
         } else {
             context.res = {
-                status: 404,
+                status: 400,
                 body: `Missing required request parameters`
             };
             context.done();   
@@ -142,23 +163,31 @@ module.exports =  function (context, req) {
         if (firmware_id !== null) {
             let sqlQuery = 'uspDeleteFirmware';
             request = new Request(sqlQuery, function(err) {
-                if (err) { console.log(err); }
+                if (err) { 
+                    console.log(err.message);
+                    error = true;
+                    context.res = {
+                        status: 500,             
+                        body: {
+                            code: 500,
+                            error: 'An error occured while deleting the firmware from the database.'
+                        }
+                    };
+                }
             });
             request.addParameter('firmwareid', TYPES.Int, firmware_id);
             request.addOutputParameter('result', TYPES.Int);
             
             //Use this event handler if the usp returns an output parameter
             request.on('returnValue', function (parameterName, value, metadata) { 
-                console.log('request.on(returnValue)');
-                console.log(value);
                 if (parameterName === 'result' && value === 1) {
                     context.res = {
                         status: 200
                     };
-                } else {
+                } else if (!error) {
                     context.res = {
                         status: 404,
-                        body: 'Error deleting firmware'
+                        body: 'Firmware not found in the database'
                     };
                 }
                 context.done();
@@ -166,7 +195,7 @@ module.exports =  function (context, req) {
             connection.callProcedure(request);
         } else {
             context.res = {
-                status: 404,
+                status: 400,
                 body: `Missing required request parameter`
             };
             context.done();   
