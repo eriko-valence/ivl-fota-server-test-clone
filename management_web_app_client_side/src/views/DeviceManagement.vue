@@ -41,10 +41,10 @@ export
         ddGroups: [],
         fields: [
           { key: 'deviceid', label: 'Device ID', sortable: true, sortDirection: 'desc' },
-          { key: 'group', label: 'Group' },
+          { key: 'group', label: 'Group', sortable: true,},
           { key: 'desired_fw', label: 'Desired FW Version', sortable: true, class: 'text-center' },
           { key: 'reported_fw', label: 'Reported FW Version', sortable: true, class: 'text-center' },
-          { key: 'last_report_date', label: 'Last Report Date', sortable: true, class: 'text-center' }
+          { key: 'last_reported', label: 'Last Report Date', sortable: true, class: 'text-center' }
         ],
         isLoading: false
       }
@@ -87,7 +87,6 @@ export
         });
       },
       getAllDevices() {
-        console.log('get all devices');
         this.toggleLoading(true);
         let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/devices';
         let accessToken1 = `Bearer ${authentication.getAccessToken()}`;

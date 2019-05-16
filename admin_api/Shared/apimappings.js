@@ -11,7 +11,8 @@ module.exports = {
             GroupName: 'group',
             GroupId: 'group_id',
             DesiredFirmwareVersion: 'desired_fw',
-            ReportedFirmwareVersion: 'reported_fw'
+            ReportedFirmwareVersion: 'reported_fw',
+            LastReported: 'last_reported'
         };
     },
     

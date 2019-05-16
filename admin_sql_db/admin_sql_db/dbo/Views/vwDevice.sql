@@ -11,7 +11,8 @@ SELECT
   TRIM(t1.ReportedFirmwareVersion) as 'ReportedFirmwareVersion',
   TRIM(t2.Name) as 'GroupName',
   RTRIM(t2.Id) as 'GroupId',
-  TRIM(t3.Version) as 'DesiredFirmwareVersion'
+  TRIM(t3.Version) as 'DesiredFirmwareVersion',
+  t1.LastReported as 'LastReported'
 FROM
   Device t1
 LEFT OUTER JOIN 
