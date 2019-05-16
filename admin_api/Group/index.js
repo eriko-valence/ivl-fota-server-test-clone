@@ -6,11 +6,9 @@ const KeyVault = require('azure-keyvault');
 const msRestAzure = require('ms-rest-azure');
 const helper = require('../Shared/helper');
 const apihelper = require('../Shared/apimappings');
-//const models = require('../Shared/models');
 
 module.exports =  function (context, req) {
     let requestMethod = _.get(req, 'method', ''); 
-    console.log(requestMethod);
     let sortBy = _.get(req.query, 'sort_by', ''); //example --> sort_by=desc(deviceid)
     let secret = process.env.AzureADClientSecret;
     let clientId = process.env.AzureADClientID;
@@ -41,9 +39,20 @@ module.exports =  function (context, req) {
     });
 
    function getGroups(connection) {
+        let error = false;
         let sqlQuery = 'uspGetAllGroups';
         request = new Request(sqlQuery, function(err) {
-            if (err) { console.log(err); }
+            if (err) { 
+                console.log(err.message);
+                error = true;
+                context.res = {
+                    status: 500,             
+                    body: {
+                        code: 500,
+                        error: 'An error occured while retrieving groups from the database.'
+                    }
+                };
+            }
         });
         let groups = [];
         let apiFieldMappings = apihelper.getGroupApiFieldMappings();
@@ -69,7 +78,7 @@ module.exports =  function (context, req) {
                     status: 200,
                     body: groups
                 };
-            } else {
+            } else if (!error) {
                 context.res = {
                     status: 404,
                     body: 'No groups found on server side'
@@ -81,12 +90,23 @@ module.exports =  function (context, req) {
     }
 
     function createGroup(connection) {
+        let error = false;
         let name = _.get(req.body, 'name', null);
         let desiredfwid = _.get(req.body, 'desired_fw_id', null);
         if (name !== null && desiredfwid !== null) {
             let sqlQuery = 'uspCreateGroup';
             request = new Request(sqlQuery, function(err) {
-                if (err) { console.log(err); }
+                if (err) { 
+                    console.log(err.message);
+                    error = true;
+                    context.res = {
+                        status: 500,             
+                        body: {
+                            code: 500,
+                            error: 'An error occured while creating the group in the database.'
+                        }
+                    };
+                }
             });
             request.addParameter('name', TYPES.NChar, name);
             request.addParameter('desiredfwid', TYPES.Int, desiredfwid);
@@ -106,10 +126,10 @@ module.exports =  function (context, req) {
                     status: 201,
                     body: groups[0]
                 };
-            } else {
+            } else if (!error) {
                 context.res = {
-                    status: 404,
-                    body: 'No groups found on server side'
+                    status: 500,
+                    body: 'Created group not found on server side'
                 };
             }
             context.done();
@@ -118,21 +138,31 @@ module.exports =  function (context, req) {
         } else {
             context.res = {
                 status: 404,
-                body: `Missing required request parameter 'name' and/or 'desired_fw_id'`
+                body: `Missing required request parameter(s)`
             };
             context.done();   
         }
     }
 
     function updateGroup(connection) {
-        console.log('updateGroup');
+        let error = false;
         let groupid = _.get(req.params, 'groupid', '');
         let groupname = _.get(req.body, 'name', null);
         let desiredfwid = _.get(req.body, 'desired_fw_id', null);
         if (groupid !== null && groupname !== null) {
             let sqlQuery = 'uspUpdateGroup';
             request = new Request(sqlQuery, function(err) {
-                if (err) { console.log(err); }
+                if (err) { 
+                    console.log(err.message);
+                    error = true;
+                    context.res = {
+                        status: 500,             
+                        body: {
+                            code: 500,
+                            error: 'An error occured while updating the group in the database.'
+                        }
+                    };
+                }
             });
             request.addParameter('name', TYPES.NChar, groupname);
             request.addParameter('groupid', TYPES.Int, groupid);
@@ -154,48 +184,55 @@ module.exports =  function (context, req) {
                     status: 200,
                     body: groups[0]
                 };
-            } else {
+            } else if (!error) {
                 context.res = {
-                    status: 404,
-                    body: 'No groups found on server side'
+                    status: 500,
+                    body: 'Updated group not found on server side'
                 };
             }
             context.done();
             });
-            console.log('call the stored procedure');
-            console.log(request);
             connection.callProcedure(request);
         } else {
             context.res = {
-                status: 404,
-                body: `Missing required request parameters`
+                status: 400,
+                body: `Missing required request parameter(s)`
             };
             context.done();   
         }
     }
 
     function deleteGroup(connection) {
+        let error = false;
         let groupid = _.get(req.params, 'groupid', null);
 
         if (groupid !== null) {
             let sqlQuery = 'uspDeleteGroup';
             request = new Request(sqlQuery, function(err) {
-                if (err) { console.log(err); }
+                if (err) { 
+                    console.log(err.message);
+                    error = true;
+                    context.res = {
+                        status: 500,             
+                        body: {
+                            code: 500,
+                            error: 'An error occured while deleting the group from the database.'
+                        }
+                    };
+                }
             });
             request.addParameter('groupid', TYPES.Int, groupid);
             request.addOutputParameter('result', TYPES.Int);
             
             //Use this event handler if the usp returns an output parameter
             request.on('returnValue', function (parameterName, value, metadata) { 
-                console.log('request.on(returnValue)');
-                console.log(value);
                 if (parameterName === 'result' && value === 1) {
                     context.res = {
                         status: 200
                     };
-                } else {
+                } else if (!error) {
                     context.res = {
-                        status: 404,
+                        status: 500,
                         body: 'Error deleting group'
                     };
                 }
@@ -204,8 +241,8 @@ module.exports =  function (context, req) {
             connection.callProcedure(request);
         } else {
             context.res = {
-                status: 404,
-                body: `Missing required request parameter 'groupid'`
+                status: 400,
+                body: `Missing required request parameter(s)`
             };
             context.done();   
         }
