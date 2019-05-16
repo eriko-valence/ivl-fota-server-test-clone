@@ -9,7 +9,6 @@ const apihelper = require('../Shared/apimappings');
 
 module.exports =  function (context, req) {
     let requestMethod = _.get(req, 'method', ''); 
-    console.log(requestMethod);
     let sortBy = _.get(req.query, 'sort_by', ''); //example --> sort_by=desc(deviceid)
     let secret = process.env.AzureADClientSecret;
     let clientId = process.env.AzureADClientID;
@@ -39,8 +38,19 @@ module.exports =  function (context, req) {
 
    function getDevices(connection) {
         let sqlQuery = 'uspGetAllDevices';
+        let error = false;
         request = new Request(sqlQuery, function(err) {
-            if (err) { console.log(err); }
+            if (err) { 
+                console.log(err.message);
+                error = true;
+                context.res = {
+                    status: 500,             
+                    body: {
+                        code: 500,
+                        error: 'An error occured while retrieving devices from the database.'
+                    }
+                };
+            }
         });
         let devices = [];
         let apiFieldMappings = apihelper.getDeviceApiFieldMappings();
@@ -66,10 +76,10 @@ module.exports =  function (context, req) {
                     status: 200,
                     body: devices
                 };
-            } else {
+            } else if (!error) {
                 context.res = {
                     status: 404,
-                    body: 'No devices found on server side'
+                    body: 'No devices found on the server side',
                 };
             }
             context.done();
@@ -78,43 +88,35 @@ module.exports =  function (context, req) {
     }
 
     function createDevice(connection) {
+        let error = false;
         let deviceid = _.get(req.body, 'deviceid', null);
         let groupid = _.get(req.body, 'group_id', null);
         if (deviceid !== null) {
             let sqlQuery = 'uspCreateDevice';
             request = new Request(sqlQuery, function(err) {
-                if (err) { console.log(err); }
-            });
-            request.addParameter('deviceid', TYPES.BigInt, deviceid);
-            request.addParameter('groupid', TYPES.Int, groupid);
-            //request.addOutputParameter('result', TYPES.Int);
-            /*
-            //Use this event handler if the usp does not return an output parameter
-            request.on('doneInProc', function (rowCount, more, rows) { 
-                console.log('request.on.doneInProc');
-                if (rowCount === 1) {
-                    console.log('insert successful');
-                }
-            });
-            //Use this event handler if the usp returns an output parameter
-            request.on('returnValue', function (parameterName, value, metadata) { 
-                console.log('request.on.returnValue');
-                if (parameterName === 'result' && value === 1) {
+                if (err) { 
+                    console.log(err.message);
+                    error = true;
                     context.res = {
-                        status: 200
+                        status: 500,             
+                        body: {
+                            code: 500,
+                            error: 'An error occured while updating this device in the database.'
+                        }
                     };
                 }
             });
-            */
-           let devices = [];
-           let apiFieldMappings = apihelper.getDeviceApiFieldMappings();
-           //process row from execution of the SQL statement
-           request.on('row', function(columns) {
-               let device = helper.processRow(columns,apiFieldMappings);
-               if (device.length === 1) {
-                   devices.push(device[0]);
-               }
-           });
+            request.addParameter('deviceid', TYPES.BigInt, deviceid);
+            request.addParameter('groupid', TYPES.NChar, groupid);
+            let devices = [];
+            let apiFieldMappings = apihelper.getDeviceApiFieldMappings();
+            //process row from execution of the SQL statement
+            request.on('row', function(columns) {
+                let device = helper.processRow(columns,apiFieldMappings);
+                if (device.length === 1) {
+                    devices.push(device[0]);
+                }
+            });
             //this is the final event emitted by an azure sql query request
             request.on('requestCompleted', function () {
             if (devices.length > 0) {
@@ -122,10 +124,13 @@ module.exports =  function (context, req) {
                     status: 201,
                     body: devices[0]
                 };
-            } else {
+            } else if (!error) {
                 context.res = {
                     status: 404,
-                    body: 'No devices found on server side'
+                    body: {
+                        code: 404,
+                        error: 'Created device not found on the server side'
+                    }
                 };
             }
             context.done();
@@ -133,21 +138,34 @@ module.exports =  function (context, req) {
             connection.callProcedure(request);
         } else {
             context.res = {
-                status: 404,
-                body: `Missing required request parameter 'deviceid'`
+                status: 400,
+                body: {
+                    code: 400,
+                    error: 'Missing required request parameters'
+                }
             };
             context.done();   
         }
     }
 
     function updateDevice(connection) {
-        console.log('updateDevice');
+        let error = false;
         let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
         let groupid = _.get(req.body, 'group_id', null);
         if (deviceid !== null && groupid !== null) {
             let sqlQuery = 'uspUpdateDevice';
             request = new Request(sqlQuery, function(err) {
-                if (err) { console.log(err); }
+                if (err) { 
+                    console.log(err.message);
+                    error = true;
+                    context.res = {
+                        status: 500,             
+                        body: {
+                            code: 500,
+                            error: 'An error occured while updating this device in the database.'
+                        }
+                    };
+                }
             });
             request.addParameter('deviceid', TYPES.BigInt, deviceid);
             request.addParameter('groupid', TYPES.Int, groupid);
@@ -156,9 +174,6 @@ module.exports =  function (context, req) {
             let apiFieldMappings = apihelper.getDeviceApiFieldMappings();
             //process row from execution of the SQL statement
             request.on('row', function(columns) {
-                console.log('request.on.row');
-                console.log('columns');
-                console.log(columns);
                let device = helper.processRow(columns,apiFieldMappings);
                if (device.length === 1) {
                    devices.push(device[0]);
@@ -166,28 +181,30 @@ module.exports =  function (context, req) {
             });
             //this is the final event emitted by an azure sql query request
             request.on('requestCompleted', function () {
-                console.log('devices');
-                console.log(devices);
             if (devices.length > 0) {
                 context.res = {
                     status: 200,
                     body: devices[0]
                 };
-            } else {
+            } else if (!error) {  //there were no t-sql errors, but the updated device info was not returned
                 context.res = {
-                    status: 404,
-                    body: 'No devices found on server side'
+                    status: 500,             
+                    body: {
+                        error: 'Unable to retieve the updated device from the database.',
+                        code: 500
+                    }
                 };
             }
             context.done();
             });
-            console.log('call the stored procedure');
-            console.log(request);
             connection.callProcedure(request);
         } else {
             context.res = {
-                status: 404,
-                body: `Missing required request parameter 'deviceid' and/or 'groupid'`
+                status: 400,
+                body: {
+                    code: 400,
+                    error: 'Missing required request parameters'
+                }
             };
             context.done();   
         }
