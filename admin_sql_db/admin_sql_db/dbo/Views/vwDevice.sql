@@ -10,6 +10,7 @@ SELECT
   RTRIM(t1.Id) as 'DeviceId',
   TRIM(t1.ReportedFirmwareVersion) as 'ReportedFirmwareVersion',
   TRIM(t2.Name) as 'GroupName',
+  RTRIM(t2.Id) as 'GroupId',
   TRIM(t3.Version) as 'DesiredFirmwareVersion'
 FROM
   Device t1

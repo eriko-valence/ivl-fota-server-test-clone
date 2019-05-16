@@ -5,6 +5,11 @@
         <b-spinner class="align-middle"></b-spinner>
         <strong>Loading...</strong>
       </div>
+
+    <template slot="group" scope="row">
+      <b-form-select @change="updateDeviceInMFOX(row.item)" v-model="row.item.group_id" :options="ddGroups" class="mb-3"></b-form-select>
+    </template>
+
     </b-table>
     <b-button v-b-modal.modal-prevent>Create New Device</b-button>
     <b-modal id="modal-prevent" ref="modal" title="Upload File" @ok="handleOk" @shown="handleLoadModal">
@@ -36,12 +41,12 @@ export
         ddGroups: [],
         fields: [
           { key: 'deviceid', label: 'Device ID', sortable: true, sortDirection: 'desc' },
-          { key: 'group', label: 'Group', sortable: true, class: 'text-center' },
+          { key: 'group', label: 'Group' },
           { key: 'desired_fw', label: 'Desired FW Version', sortable: true, class: 'text-center' },
           { key: 'reported_fw', label: 'Reported FW Version', sortable: true, class: 'text-center' },
           { key: 'last_report_date', label: 'Last Report Date', sortable: true, class: 'text-center' }
         ],
-        isLoading: false,
+        isLoading: false
       }
     },
     methods: {
@@ -103,7 +108,7 @@ export
           //populate group drop down list array
           var arrayLength = response.data.length;
           for (var i = 0; i < arrayLength; i++) {
-              this.ddGroups.push({ text: response.data[i]['name'], value: response.data[i]['group_id'] });
+              this.ddGroups.push({ value: response.data[i]['group_id'], text: response.data[i]['name'] });
           }
         }).catch(function (error) {
           console.log(`error: ${error}`); // eslint-disable-line
@@ -111,6 +116,21 @@ export
       },
       toggleLoading(state) {
         this.isLoading = state;
+      },
+      updateDeviceInMFOX(item) {
+        let deviceUpdateBodyMFOX = {
+          deviceid: item.deviceid,
+          group_id : item.group_id
+        };
+        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/devices/${item.deviceid}`;
+        let accessToken = `Bearer ${authentication.getAccessToken()}`;
+        this.axios.put(apiEndpoint, deviceUpdateBodyMFOX, {headers: {'authorization': accessToken}})
+        .then( (response) => {
+          console.log(`response: ${response}`); // eslint-disable-line
+          this.getAllDevices();
+        }).catch( (error) => {
+          console.log(`error: ${error}`); // eslint-disable-line
+        });
       }
     },
     created:
