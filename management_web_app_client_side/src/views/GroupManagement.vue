@@ -25,8 +25,7 @@
 
     <b-modal ref="modal-delete-error" hide-footer>
       <div class="d-block text-center">
-        <h6>An error occured while deleting the group</h6>
-        <h6>{{this.groupDeleteError}}</h6>
+        <h6>{{this.deleteError}}</h6>
       </div>
       <b-button @click="confirmDeleteGroupError()" pill>OK</b-button>
     </b-modal>
@@ -81,13 +80,13 @@ export
         //editGroupFirmware: { text: '', value: ''},
         editGroupFirmware: [],
         ddFirmware: [],
+        deleteError: '',
         fields: [
             { key: 'name', label: 'Group name', sortable: true, sortDirection: 'desc' },
             { key: 'desired_fw', label: 'Desired Firmware', sortable: true, class: 'text-center' },
             { key: 'actionDelete', label: '' },
             { key: 'actionEdit', label: '' }
         ],
-        groupDeleteError: '',
         groupIdToDelete: '',
         isLoading: false,
       }
@@ -123,7 +122,7 @@ export
       },
       confirmDeleteGroupError() {
         this.$refs['modal-delete-error'].hide();
-        this.firmwareDeleteError = '';
+        this.deleteError = '';
       },
       handleOk(evt) {
         evt.preventDefault()
@@ -154,8 +153,8 @@ export
             console.log(`response: ${response}`); // eslint-disable-line
             this.getAllGroupsFromMFOX();
           }).catch( (error) => {
+            this.deleteError = error.response.data.error;
             this.$refs['modal-delete-error'].show();
-            this.groupDeleteError = error;
         });
     },
       updateGroupInMFOX() {
@@ -170,7 +169,7 @@ export
             this.getAllGroupsFromMFOX();
           }).catch( (error) => {
             this.$refs['modal-delete-error'].show();
-            this.groupDeleteError = error;
+            this.deleteError = error;
         });
       },
       getAllGroupsFromMFOX() {

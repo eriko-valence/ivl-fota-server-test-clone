@@ -19,8 +19,7 @@
     <b-button v-b-modal.modal-prevent>Upload New Firmware</b-button>
     <b-modal ref="modal-delete-error" hide-footer>
       <div class="d-block text-center">
-        <h6>An error occured while deleting the firmware</h6>
-        <h6>{{this.firmwareDeleteError}}</h6>
+        <h6>{{this.deleteError}}</h6>
       </div>
       <b-button @click="confirmDeleteFirmwareError()" pill>OK</b-button>
     </b-modal>
@@ -52,8 +51,8 @@ export
           { key: 'actionDelete', label: '' }
         ],
         firmwareVersionToDelete: '',
-        firmwareDeleteError: '',
         isLoading: false,
+        deleteError: ''
       }
     },
     methods: {
@@ -73,7 +72,7 @@ export
       },
       confirmDeleteFirmwareError() {
         this.$refs['modal-delete-error'].hide();
-        this.firmwareDeleteError = '';
+        this.deleteError = '';
       },
       deleteFirmwareConfirm(items) {
         this.$refs['modal-confirm-delete'].show()
@@ -154,8 +153,8 @@ export
         .then( (response) => {
           this.getAllFirmwareFromMFOX();
         }).catch( (error) => {
+          this.deleteError = error.response.data.error;
           this.$refs['modal-delete-error'].show();
-          this.firmwareDeleteError = error;
         });
       },
       async uploadFirmwareToAzureBlob(uploadUri, fileContent) {
