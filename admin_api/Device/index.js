@@ -79,7 +79,10 @@ module.exports =  function (context, req) {
             } else if (!error) {
                 context.res = {
                     status: 404,
-                    body: 'No devices found on the server side',
+                    body: {
+                        code: 404,
+                        error: 'No devices found on the server side'
+                    }
                 };
             }
             context.done();
@@ -169,6 +172,7 @@ module.exports =  function (context, req) {
             });
             request.addParameter('deviceid', TYPES.BigInt, deviceid);
             request.addParameter('groupid', TYPES.Int, groupid);
+            request.addOutputParameter('result', TYPES.Int);
             let devices = [];
             //used to map the sql query result set columns to their related api fields
             let apiFieldMappings = apihelper.getDeviceApiFieldMappings();
@@ -179,24 +183,36 @@ module.exports =  function (context, req) {
                    devices.push(device[0]);
                }
             });
-            //this is the final event emitted by an azure sql query request
-            request.on('requestCompleted', function () {
-            if (devices.length > 0) {
-                context.res = {
-                    status: 200,
-                    body: devices[0]
-                };
-            } else if (!error) {  //there were no t-sql errors, but the updated device info was not returned
-                context.res = {
-                    status: 500,             
-                    body: {
-                        error: 'Unable to retieve the updated device from the database.',
-                        code: 500
+
+            //Use this event handler if the usp returns an output parameter
+            request.on('returnValue', function (parameterName, value, metadata) {
+                if (parameterName === 'result' && value === 1) { //1 = successful  update
+                    if (devices.length > 0) { // make sure the updated device record was returned
+                        context.res = {
+                            status: 200,
+                            body: devices[0]
+                        };
                     }
-                };
-            }
-            context.done();
+                } else if (parameterName === 'result' && value === 2) { //2 = device does not exist
+                    context.res = {
+                        status: 404,
+                        body: {
+                            code: 404,
+                            error: 'The device was not found.'
+                        }
+                    };
+                } else if (!error) {
+                    context.res = {
+                        status: 500,
+                        body: {
+                            code: 500,
+                            error: 'Something went wrong while updating the device.'
+                        }
+                    };
+                }
+                context.done();
             });
+
             connection.callProcedure(request);
         } else {
             context.res = {
