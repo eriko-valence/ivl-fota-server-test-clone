@@ -113,6 +113,7 @@ module.exports =  function (context, req) {
             });
             request.addParameter('name', TYPES.NChar, name);
             request.addParameter('desiredfwid', TYPES.Int, desiredfwid);
+            request.addOutputParameter('result', TYPES.Int);
            let groups = [];
            let apiFieldMappings = apihelper.getGroupApiFieldMappings();
            //process row from execution of the SQL statement
