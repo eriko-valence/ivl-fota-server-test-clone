@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[uspCreateGroup]
-  @name nchar(100), @desiredfwid nchar(100)
+  @name nchar(100), @desiredfwid nchar(100), @result INT OUTPUT
 AS
 BEGIN
   
@@ -7,6 +7,11 @@ BEGIN
 	VALUES(
 		@name,
 		@desiredfwid);
+
+  	IF @@rowcount = 1
+	  SET @result = 1 --successful creation
+	ELSE
+	  SET @result = 4 --unsuccessful creation 
 
   SELECT * FROM vwGroup where GroupName = @name; --TODO: May want to change the where clause from Name to Id
 		

@@ -81,7 +81,10 @@ module.exports =  function (context, req) {
             } else if (!error) {
                 context.res = {
                     status: 404,
-                    body: 'No groups found on server side'
+                    body: {
+                        code: 404,
+                        error: 'No groups found on server side'
+                    }
                 };
             }
             context.done();
@@ -119,6 +122,28 @@ module.exports =  function (context, req) {
                    groups.push(group[0]);
                }
            });
+
+            //Use this event handler if the usp returns an output parameter
+            request.on('returnValue', function (parameterName, value, metadata) {
+            if (parameterName === 'result' && value === 1) { //1 = successful  update
+                if (groups.length > 0) {
+                    context.res = {
+                        status: 201,
+                        body: groups[0]
+                    };
+                }
+            } else if (!error) {
+                context.res = {
+                    status: 500,
+                    body: {
+                        code: 500,
+                        error: 'Something went wrong while creating the group.'
+                    }
+                };
+            }
+            context.done();
+            });
+
             //this is the final event emitted by an azure sql query request
             request.on('requestCompleted', function () {
             if (groups.length > 0) {
@@ -128,8 +153,11 @@ module.exports =  function (context, req) {
                 };
             } else if (!error) {
                 context.res = {
-                    status: 500,
-                    body: 'Created group not found on server side'
+                    status: 404,
+                    body: {
+                        code: 404,
+                        error: 'Created group not found on server side'
+                    }
                 };
             }
             context.done();
@@ -138,7 +166,10 @@ module.exports =  function (context, req) {
         } else {
             context.res = {
                 status: 404,
-                body: `Missing required request parameter(s)`
+                body: {
+                    code: 404,
+                    error: 'Missing required request parameter(s)'
+                }
             };
             context.done();   
         }
@@ -167,6 +198,7 @@ module.exports =  function (context, req) {
             request.addParameter('name', TYPES.NChar, groupname);
             request.addParameter('groupid', TYPES.Int, groupid);
             request.addParameter('desiredfwid', TYPES.Int, desiredfwid);
+            request.addOutputParameter('result', TYPES.Int);
             let groups = [];
             //used to map the sql query result set columns to their related api fields
             let apiFieldMappings = apihelper.getGroupApiFieldMappings();
@@ -177,26 +209,44 @@ module.exports =  function (context, req) {
                    groups.push(group[0]);
                }
             });
-            //this is the final event emitted by an azure sql query request
-            request.on('requestCompleted', function () {
-            if (groups.length > 0) {
-                context.res = {
-                    status: 200,
-                    body: groups[0]
-                };
-            } else if (!error) {
-                context.res = {
-                    status: 500,
-                    body: 'Updated group not found on server side'
-                };
-            }
-            context.done();
+
+            //Use this event handler if the usp returns an output parameter
+            request.on('returnValue', function (parameterName, value, metadata) {
+                if (parameterName === 'result' && value === 1) { //1 = successful  update
+                    if (groups.length > 0) { // make sure the updated group record was returned
+                        context.res = {
+                            status: 200,
+                            body: groups[0]
+                        };
+                    }
+                } else if (parameterName === 'result' && value === 2) { //2 = group does not exist
+                    context.res = {
+                        status: 404,
+                        body: {
+                            code: 404,
+                            error: 'The group was not found.'
+                        }
+                    };
+                } else if (!error) {
+                    context.res = {
+                        status: 500,
+                        body: {
+                            code: 500,
+                            error: 'Something went wrong while updating the group.'
+                        }
+                    };
+                }
+                context.done();
             });
+
             connection.callProcedure(request);
         } else {
             context.res = {
                 status: 400,
-                body: `Missing required request parameter(s)`
+                body: {
+                    code: 400,
+                    error: 'Missing required request parameter(s).'
+                }
             };
             context.done();   
         }
@@ -230,10 +280,31 @@ module.exports =  function (context, req) {
                     context.res = {
                         status: 200
                     };
+                }
+                else if (parameterName === 'result' && value === 2) {
+                    context.res = {
+                        status: 404,
+                        body: {
+                            code: 404,
+                            error: 'Group not found'
+                        }
+                    };
+                } 
+                else if (parameterName === 'result' && value === 3) {
+                    context.res = {
+                        status: 400,
+                        body: {
+                            code: 400,
+                            error: 'There are still devices assigned to this group'
+                        }
+                    };
                 } else if (!error) {
                     context.res = {
                         status: 500,
-                        body: 'Error deleting group'
+                        body: {
+                            code: 500,
+                            error: 'Error deleting group'
+                        }
                     };
                 }
                 context.done();
@@ -242,7 +313,10 @@ module.exports =  function (context, req) {
         } else {
             context.res = {
                 status: 400,
-                body: `Missing required request parameter(s)`
+                body: {
+                    code: 400,
+                    error: 'Missing required request parameter(s)'
+                }
             };
             context.done();   
         }
