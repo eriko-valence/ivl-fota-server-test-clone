@@ -109,28 +109,21 @@ export
         reader.readAsBinaryString(file);
       },
       getAzureStorageSasToken(blobName) {
-        console.log('02A - Request a SAS URI for the azure storage blob file upload.') // eslint-disable-line
         let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/upload_uri?name=${blobName}`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         var fileContent = this.firmwareFileContent;
-        console.log('02A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
         .then((response) => {
-          console.log('02B - Received a SAS URI for the azure storage blob file upload. ' + response.status); // eslint-disable-line
-          console.log('02B - SAS URI: ' + response.data.sas_uri); // eslint-disable-line
           this.uploadFirmwareToAzureBlob(response.data.sas_uri, fileContent, blobName);
         }).catch(function (error) {
           console.log(`error: ${error}`); // eslint-disable-line
         });
       },
       uploadToMFOX() {
-        console.log('04A - Request creation of new firmware release in the MFOX DB.'); // eslint-disable-line
         let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
-        console.log('04A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
           .then( (response) => {
-            console.log('04B - Created new firmware release in the MFOX DB. ' + response.status); // eslint-disable-line
             this.getAllFirmwareFromMFOX();
           }).catch(function (error) {
             console.log(`error: ${error}`); // eslint-disable-line
@@ -138,40 +131,31 @@ export
       },
       getAllFirmwareFromMFOX() {
         this.toggleLoading(true);
-        console.log('01A - Request list of all firmware versions registered in the MFOX DB.'); // eslint-disable-line
         let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        console.log('01A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
           .then((response) => {
             this.toggleLoading(false);
-            console.log('01B - Received list of all firmware versions registered in the MFOX DB. ' + response.status); // eslint-disable-line
             this.items = response.data;
-          }).catch(function (error) {
+          }).catch((error) => {
             this.toggleLoading(false);
             console.log(`error: ${error}`); // eslint-disable-line
         });
       },
 
       deleteFirmewareFromMFOX(version) {
-        console.log('04A - Request deletion of firmware release from the MFOX DB.'); // eslint-disable-line
         this.$refs['modal-confirm-delete'].hide();
         let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/firmware/${version}`;
-        console.log('04A - API Endpoint: ' + apiEndpoint); // eslint-disable-line
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
         .then( (response) => {
-          console.log('04B - Deleted firmware release from the MFOX DB. ' + response.status); // eslint-disable-line
           this.getAllFirmwareFromMFOX();
         }).catch( (error) => {
-          console.log(`error: ${error}`); // eslint-disable-line
           this.$refs['modal-delete-error'].show();
           this.firmwareDeleteError = error;
         });
       },
       async uploadFirmwareToAzureBlob(uploadUri, fileContent) {
-        console.log('03A - Request upload of firmware binary to azure storage blob container.'); // eslint-disable-line
-        console.log('03A - API Endpoint: ' + uploadUri); // eslint-disable-line
         const {
           AnonymousCredential,
           StorageURL,
@@ -193,7 +177,6 @@ export
           content,
           content.size
         );
-        console.log('03B - Uploaded firmware binary to azure storage blob container. ' + uploadBlobResponse._response.status); // eslint-disable-line
         //let md5_b64 = btoa(String.fromCharCode.apply(null, uploadBlobResponse.contentMD5));
         let md5_hex = Buffer.from(uploadBlobResponse.contentMD5).toString('hex');
         this.firmwareUploadBodyMFOX.md5 = md5_hex;

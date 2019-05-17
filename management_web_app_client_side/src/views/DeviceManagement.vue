@@ -94,9 +94,8 @@ export
           .then((response) => {
             this.toggleLoading(false);
             this.allDevices = response.data;
-          }).catch(function (error) {
+          }).catch( (error) => {
             this.toggleLoading(false);
-            console.log(`error: ${error}`); // eslint-disable-line
         });
       },
       getAllGroups() {

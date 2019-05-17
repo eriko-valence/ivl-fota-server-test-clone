@@ -181,7 +181,7 @@ export
           .then((response) => {
             this.toggleLoading(false);
             this.allGroups = response.data;
-          }).catch(function (error) {
+          }).catch((error) =>{
             this.toggleLoading(false);
             console.log(`error: ${error}`); // eslint-disable-line
           });
