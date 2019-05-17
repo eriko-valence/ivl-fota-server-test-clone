@@ -39,6 +39,7 @@ BEGIN
   SELECT * FROM vwGroup where GroupId = @groupid;
 
 END
+ELSE
   SET @result = 2 --group not found
 
 

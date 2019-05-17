@@ -19,8 +19,8 @@ BEGIN
   SELECT * FROM vwDevice where DeviceId = @deviceid;
 
 END
-
-SET @result = 2 --device not found
+ELSE
+  SET @result = 2 --device not found
   
 		
 END
