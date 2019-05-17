@@ -194,13 +194,11 @@ export
         this.isLoading = state;
       },    
       clipboardCopy: function (message) {
-        console.log(message);
         this.$copyText(message).then(function (e) {
-          alert('Copied')
-          console.log(e)
+          console.log(`clipboard: ${e.text}`); // eslint-disable-line
         }, function (e) {
-          alert('Can not copy')
-          console.log(e)
+          console.log('clipboard error: '); // eslint-disable-line
+          console.log(e);
         })
       }
   },
