@@ -139,6 +139,9 @@ export
             this.items = response.data;
           }).catch((error) => {
             this.toggleLoading(false);
+            if (error.toString().includes("404")) {
+              this.items = [];
+            }
             console.log(`error: ${error}`); // eslint-disable-line
         });
       },

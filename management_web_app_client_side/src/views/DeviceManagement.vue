@@ -95,6 +95,9 @@ export
             this.toggleLoading(false);
             this.allDevices = response.data;
           }).catch( (error) => {
+            if (error.toString().includes("404")) {
+              this.allDevices = [];
+            }
             this.toggleLoading(false);
         });
       },

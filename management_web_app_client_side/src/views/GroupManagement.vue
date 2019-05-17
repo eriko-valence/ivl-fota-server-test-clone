@@ -182,6 +182,10 @@ export
             this.toggleLoading(false);
             this.allGroups = response.data;
           }).catch((error) =>{
+            console.log(error);
+            if (error.toString().includes("404")) {
+              this.allGroups = []
+            }
             this.toggleLoading(false);
             console.log(`error: ${error}`); // eslint-disable-line
           });
