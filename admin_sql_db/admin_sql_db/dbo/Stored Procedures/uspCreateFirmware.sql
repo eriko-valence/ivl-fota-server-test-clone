@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[uspCreateFirmware]
-  @version nchar(100), @signature nchar(1000), @md5 nchar(100), @blobname nchar(100), @blobcontainer nchar(100)
+  @version nchar(100), @signature nchar(1000), @md5 nchar(100), @blobname nchar(100), @blobcontainer nchar(100), @result INT OUTPUT
 AS
 BEGIN
   
@@ -10,6 +10,11 @@ BEGIN
 		@md5,
 		@blobname,
 		@blobcontainer);
+
+  IF @@rowcount = 1
+    SET @result = 1 --successful creation
+  ELSE
+	SET @result = 4 --unsuccessful creation 
 
   SELECT * FROM vwFirmware where BlobName = @blobname; --TODO: May want to change the where clause from BlobName to Id
 		

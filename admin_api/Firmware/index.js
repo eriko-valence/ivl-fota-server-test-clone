@@ -88,7 +88,10 @@ module.exports =  function (context, req) {
             } else if (!error) {
                 context.res = {
                     status: 404,
-                    body: 'No firmware found on server side'
+                    body: {
+                        code: 404,
+                        error: 'No firmware found on server side'
+                    }
                 };
             }
             context.done();
@@ -122,6 +125,7 @@ module.exports =  function (context, req) {
             request.addParameter('md5', TYPES.NChar, md5);
             request.addParameter('blobname', TYPES.NChar, `${process.env.AzureBlobNamePrefix}${image}`);
             request.addParameter('blobcontainer', TYPES.NChar, process.env.AzureBlobContainer);
+            request.addOutputParameter('result', TYPES.Int);
 
            let firmware = [];
            let apiFieldMappings = apihelper.getFirmwareApiFieldMappings();
@@ -132,21 +136,29 @@ module.exports =  function (context, req) {
                    firmware.push(fw[0]);
                }
            });
-            //this is the final event emitted by an azure sql query request
-            request.on('requestCompleted', function () {
-            if (firmware.length > 0) {
-                context.res = {
-                    status: 201,
-                    body: firmware[0]
-                };
-            } else if (!error) {
-                context.res = {
-                    status: 500,
-                    body: 'Created firmware not found in the database'
-                };
-            }
-            context.done();
+
+
+            //Use this event handler if the usp returns an output parameter
+            request.on('returnValue', function (parameterName, value, metadata) {
+                if (parameterName === 'result' && value === 1) { //1 = successful  update
+                    if (firmware.length > 0) {
+                        context.res = {
+                            status: 201,
+                            body: firmware[0]
+                        };
+                    }
+                } else if (!error) {
+                    context.res = {
+                        status: 500,
+                        body: {
+                            code: 500,
+                            error: 'Something went wrong while creating the firmware.'
+                        }
+                    };
+                }
+                context.done();
             });
+
             connection.callProcedure(request);
         } else {
             context.res = {
@@ -184,7 +196,26 @@ module.exports =  function (context, req) {
                     context.res = {
                         status: 200
                     };
-                } else if (!error) {
+                } 
+                else if (parameterName === 'result' && value === 2) {
+                    context.res = {
+                        status: 404,
+                        body: {
+                            code: 404,
+                            error: 'Firmware not found'
+                        }
+                    };
+                } 
+                else if (parameterName === 'result' && value === 3) {
+                    context.res = {
+                        status: 400,
+                        body: {
+                            code: 400,
+                            error: 'There are still groups assigned to this firmware'
+                        }
+                    };
+                } 
+                else if (!error) {
                     context.res = {
                         status: 404,
                         body: 'Firmware not found in the database'
