@@ -5,6 +5,11 @@
         <b-spinner class="align-middle"></b-spinner>
         <strong>Loading...</strong>
       </div>
+
+      <template slot="signature" slot-scope="row">
+        <b-button @click="clipboardCopy(row.item.signature)" variant="outline-primary">Clipboard</b-button>
+      </template>
+
       <template slot="actionDelete" slot-scope="row">
         <b-button @click="deleteFirmwareConfirm(row.item)" pill variant="outline-danger">Delete</b-button>
       </template>
@@ -47,7 +52,8 @@ export
         fields: [
           { key: 'version', label: 'Version', sortable: true, sortDirection: 'desc' },
           { key: 'uri', label: 'URI', sortable: true, class: 'text-center' },
-          { key: 'signature', label: 'Signature', sortable: false, class: 'text-center' },
+          //{ key: 'signature', label: 'Signature', sortable: false, class: 'text-center' },
+          { key: 'signature', label: 'Signature'},
           { key: 'actionDelete', label: '' }
         ],
         firmwareVersionToDelete: '',
@@ -186,6 +192,16 @@ export
       },
       toggleLoading(state) {
         this.isLoading = state;
+      },    
+      clipboardCopy: function (message) {
+        console.log(message);
+        this.$copyText(message).then(function (e) {
+          alert('Copied')
+          console.log(e)
+        }, function (e) {
+          alert('Can not copy')
+          console.log(e)
+        })
       }
   },
   created:
