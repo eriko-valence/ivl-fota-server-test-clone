@@ -16,6 +16,6 @@ BEGIN
   ELSE
 	SET @result = 4 --unsuccessful creation 
 
-  SELECT * FROM vwFirmware where BlobName = @blobname; --TODO: May want to change the where clause from BlobName to Id
+  SELECT * FROM vwFirmware where BlobName = @blobname;
 		
 END

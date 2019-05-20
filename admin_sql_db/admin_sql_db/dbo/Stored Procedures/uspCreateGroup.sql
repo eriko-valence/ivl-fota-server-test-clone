@@ -13,6 +13,6 @@ BEGIN
 	ELSE
 	  SET @result = 4 --unsuccessful creation 
 
-  SELECT * FROM vwGroup where GroupName = @name; --TODO: May want to change the where clause from Name to Id
+  SELECT * FROM vwGroup where GroupName = @name;
 		
 END
