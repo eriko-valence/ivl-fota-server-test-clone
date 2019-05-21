@@ -114,7 +114,7 @@ export
         reader.readAsBinaryString(file);
       },
       getAzureStorageSasToken(blobName) {
-        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/upload_uri?name=${blobName}`;
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/upload_uri?name=${blobName}`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         var fileContent = this.firmwareFileContent;
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
@@ -125,7 +125,7 @@ export
         });
       },
       uploadToMFOX() {
-        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
           .then( (response) => {
@@ -136,7 +136,7 @@ export
       },
       getAllFirmwareFromMFOX() {
         this.toggleLoading(true);
-        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
           .then((response) => {
@@ -153,7 +153,7 @@ export
 
       deleteFirmewareFromMFOX(version) {
         this.$refs['modal-confirm-delete'].hide();
-        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/firmware/${version}`;
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware/${version}`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
         .then( (response) => {

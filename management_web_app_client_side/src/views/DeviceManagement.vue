@@ -76,7 +76,7 @@ export
         this.uploadToMFOX();
       },
       uploadToMFOX() {
-        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/devices';
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/devices`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.post(apiEndpoint, this.deviceUploadBodyMFOX, {headers: {'authorization': accessToken}})
         .then( (response) => {
@@ -88,7 +88,7 @@ export
       },
       getAllDevices() {
         this.toggleLoading(true);
-        let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/devices';
+        let apiEndpoint1 = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/devices `;
         let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
           .then((response) => {
@@ -102,7 +102,7 @@ export
         });
       },
       getAllGroups() {
-        let apiEndpoint2 = 'https://ivlapiadmin.azurewebsites.net/v1/groups';
+        let apiEndpoint2 = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups`;
         let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
         .then((response) => {                
@@ -123,7 +123,7 @@ export
           deviceid: item.deviceid,
           group_id : item.group_id
         };
-        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/devices/${item.deviceid}`;
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/devices/${item.deviceid}`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.put(apiEndpoint, deviceUpdateBodyMFOX, {headers: {'authorization': accessToken}})
         .then( (response) => {

@@ -146,7 +146,7 @@ export
       },
       deleteGroupFromMFOX(group_id) {
         this.$refs['modal-confirm-delete'].hide();
-        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/groups/${group_id}`;
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups/${group_id}`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
           .then( (response) => {
@@ -161,7 +161,7 @@ export
         this.$refs['edit-group-modal'].hide()
         this.groupUpdateBodyMFOX.name = this.editGroupName;
         this.groupUpdateBodyMFOX.desired_fw_id = this.editGroupFirmware;
-        let apiEndpoint = `https://ivlapiadmin.azurewebsites.net/v1/groups/${this.editGroupId}`;
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups/${this.editGroupId}`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.put(apiEndpoint,this.groupUpdateBodyMFOX, {headers: {'authorization': accessToken}})
           .then( (response) => {
@@ -174,7 +174,7 @@ export
       },
       getAllGroupsFromMFOX() {
         this.toggleLoading(true);
-        let apiEndpoint1 = 'https://ivlapiadmin.azurewebsites.net/v1/groups';
+        let apiEndpoint1 = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups`;
         let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
           .then((response) => {
@@ -190,7 +190,7 @@ export
           });
       },
       getAllFirmwareFromMFOX() {
-        let apiEndpoint2 = 'https://ivlapiadmin.azurewebsites.net/v1/firmware';
+        let apiEndpoint2 = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
         let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
         this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
           .then((response) => {       
@@ -224,7 +224,7 @@ export
         reader.readAsBinaryString(file);
       },
       uploadToMFOX() {
-        let apiEndpoint = 'https://ivlapiadmin.azurewebsites.net/v1/groups';
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups`;
         let accessToken = `Bearer ${authentication.getAccessToken()}`;
         this.axios.post(apiEndpoint, this.groupUploadBodyMFOX, {headers: {'authorization': accessToken}})
           .then( (response) => {
@@ -240,6 +240,9 @@ export
     },// methods
     created:
       function(){
+        console.log('line243');
+        console.log(process.env);
+        console.log(process.env.VUE_APP_API_ENDPOINT_URL);
         this.getAllGroupsFromMFOX();
         this.getAllFirmwareFromMFOX();
       }
