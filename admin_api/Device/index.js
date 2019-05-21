@@ -49,6 +49,7 @@ module.exports =  function (context, req) {
                         error: 'An error occured while retrieving devices from the database.'
                     }
                 };
+                context.done();
             }
         });
         let devices = [];
@@ -103,9 +104,10 @@ module.exports =  function (context, req) {
                         status: 500,             
                         body: {
                             code: 500,
-                            error: 'An error occured while updating this device in the database.'
+                            error: 'An error occured while creating this device in the database.'
                         }
                     };
+                    context.done();
                 }
             });
             request.addParameter('deviceid', TYPES.BigInt, deviceid);
@@ -167,6 +169,7 @@ module.exports =  function (context, req) {
                             error: 'An error occured while updating this device in the database.'
                         }
                     };
+                    context.done();
                 }
             });
             request.addParameter('deviceid', TYPES.BigInt, deviceid);

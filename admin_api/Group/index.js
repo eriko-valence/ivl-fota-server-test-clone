@@ -54,6 +54,7 @@ module.exports =  function (context, req) {
                         error: 'An error occured while retrieving groups from the database.'
                     }
                 };
+                context.done();
             }
         });
         let groups = [];
@@ -111,6 +112,7 @@ module.exports =  function (context, req) {
                             error: 'An error occured while creating the group in the database.'
                         }
                     };
+                    context.done();
                 }
             });
             request.addParameter('name', TYPES.NChar, name);
@@ -196,6 +198,7 @@ module.exports =  function (context, req) {
                             error: 'An error occured while updating the group in the database.'
                         }
                     };
+                    context.done();
                 }
             });
             request.addParameter('name', TYPES.NChar, groupname);
@@ -272,6 +275,7 @@ module.exports =  function (context, req) {
                             error: 'An error occured while deleting the group from the database.'
                         }
                     };
+                    context.done();
                 }
             });
             request.addParameter('groupid', TYPES.Int, groupid);

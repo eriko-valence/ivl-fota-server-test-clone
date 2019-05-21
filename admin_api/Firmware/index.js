@@ -51,6 +51,7 @@ module.exports =  function (context, req) {
                         error: 'An error occured while retrieving firmware from the database.'
                     }
                 };
+                context.done();
             }
         });
         let firmware = [];
@@ -118,6 +119,7 @@ module.exports =  function (context, req) {
                             error: 'An error occured while creating firmware in the database.'
                         }
                     };
+                    context.done();
                 }
             });
             request.addParameter('version', TYPES.NChar, version);
@@ -185,6 +187,7 @@ module.exports =  function (context, req) {
                             error: 'An error occured while deleting the firmware from the database.'
                         }
                     };
+                    context.done();
                 }
             });
             request.addParameter('firmwareid', TYPES.Int, firmware_id);
