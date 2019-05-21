@@ -39,7 +39,7 @@ module.exports =  function (context, req) {
 
    function getFirmware(connection) {
         let error = false;
-        let sqlQuery = 'uspGetAllFirmware';
+        let sqlQuery = 'fota_uspGetAllFirmware';
         request = new Request(sqlQuery, function(err) {
             if (err) { 
                 console.log(err.message);
@@ -106,7 +106,7 @@ module.exports =  function (context, req) {
         let signature = _.get(req.body, 'signature', null);
         let md5 = _.get(req.body, 'md5', null);
         if (version !== null && image !== null && signature !== null && md5 !== null) {
-            let sqlQuery = 'uspCreateFirmware';
+            let sqlQuery = 'fota_uspCreateFirmware';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     console.log(err.message);
@@ -173,7 +173,7 @@ module.exports =  function (context, req) {
         let firmware_id = _.get(req.params, 'firmware_version_id', null);
 
         if (firmware_id !== null) {
-            let sqlQuery = 'uspDeleteFirmware';
+            let sqlQuery = 'fota_uspDeleteFirmware';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     console.log(err.message);

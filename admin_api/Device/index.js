@@ -37,11 +37,10 @@ module.exports =  function (context, req) {
     });
 
    function getDevices(connection) {
-        let sqlQuery = 'uspGetAllDevices';
+        let sqlQuery = 'fota_uspGetAllDevices';
         let error = false;
         request = new Request(sqlQuery, function(err) {
             if (err) { 
-                console.log(err.message);
                 error = true;
                 context.res = {
                     status: 500,             
@@ -156,7 +155,7 @@ module.exports =  function (context, req) {
         let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
         let groupid = _.get(req.body, 'group_id', null);
         if (deviceid !== null && groupid !== null) {
-            let sqlQuery = 'uspUpdateDevice';
+            let sqlQuery = 'fota_uspUpdateDevice';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     console.log(err.message);

@@ -35,12 +35,14 @@ module.exports =  function (context, req) {
                     deleteGroup(connection); //Deletes existing group from MFOX DB
                 }
             });
+        }).catch(function(error) {
+            console.log(error);
         });
     });
 
    function getGroups(connection) {
         let error = false;
-        let sqlQuery = 'uspGetAllGroups';
+        let sqlQuery = 'fota_uspGetAllGroups';
         request = new Request(sqlQuery, function(err) {
             if (err) { 
                 console.log(err.message);
@@ -97,7 +99,7 @@ module.exports =  function (context, req) {
         let name = _.get(req.body, 'name', null);
         let desiredfwid = _.get(req.body, 'desired_fw_id', null);
         if (name !== null && desiredfwid !== null) {
-            let sqlQuery = 'uspCreateGroup';
+            let sqlQuery = 'fota_uspCreateGroup';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     console.log(err.message);
@@ -182,7 +184,7 @@ module.exports =  function (context, req) {
         let groupname = _.get(req.body, 'name', null);
         let desiredfwid = _.get(req.body, 'desired_fw_id', null);
         if (groupid !== null && groupname !== null) {
-            let sqlQuery = 'uspUpdateGroup';
+            let sqlQuery = 'fota_uspUpdateGroup';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     console.log(err.message);
@@ -258,7 +260,7 @@ module.exports =  function (context, req) {
         let groupid = _.get(req.params, 'groupid', null);
 
         if (groupid !== null) {
-            let sqlQuery = 'uspDeleteGroup';
+            let sqlQuery = 'fota_uspDeleteGroup';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     console.log(err.message);
