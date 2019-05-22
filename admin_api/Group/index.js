@@ -6,6 +6,8 @@ const KeyVault = require('azure-keyvault');
 const msRestAzure = require('ms-rest-azure');
 const helper = require('../Shared/helper');
 const apihelper = require('../Shared/apimappings');
+const errors = require('../Shared/errors');
+const appInsights = require("applicationinsights");
 
 module.exports =  function (context, req) {
     let requestMethod = _.get(req, 'method', ''); 
@@ -45,7 +47,8 @@ module.exports =  function (context, req) {
         let sqlQuery = 'fota_uspGetAllGroups';
         request = new Request(sqlQuery, function(err) {
             if (err) { 
-                console.log(err.message);
+                let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                client.trackException({exception: err.message, properties: props});
                 error = true;
                 context.res = {
                     status: 500,             
@@ -103,7 +106,8 @@ module.exports =  function (context, req) {
             let sqlQuery = 'fota_uspCreateGroup';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
-                    console.log(err.message);
+                    let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                    client.trackException({exception: err.message, properties: props});
                     error = true;
                     context.res = {
                         status: 500,             
@@ -188,8 +192,10 @@ module.exports =  function (context, req) {
         if (groupid !== null && groupname !== null) {
             let sqlQuery = 'fota_uspUpdateGroup';
             request = new Request(sqlQuery, function(err) {
+                context.log(err);
                 if (err) { 
-                    console.log(err.message);
+                    let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                    client.trackException({exception: err.message, properties: props});
                     error = true;
                     context.res = {
                         status: 500,             
@@ -266,7 +272,8 @@ module.exports =  function (context, req) {
             let sqlQuery = 'fota_uspDeleteGroup';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
-                    console.log(err.message);
+                    let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                    client.trackException({exception: err.message, properties: props});
                     error = true;
                     context.res = {
                         status: 500,             

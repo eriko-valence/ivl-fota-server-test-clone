@@ -6,6 +6,8 @@ const KeyVault = require('azure-keyvault');
 const msRestAzure = require('ms-rest-azure');
 const helper = require('../Shared/helper');
 const apihelper = require('../Shared/apimappings');
+const errors = require('../Shared/errors');
+const appInsights = require("applicationinsights");
 
 module.exports =  function (context, req) {
     let requestMethod = _.get(req, 'method', ''); 
@@ -13,6 +15,7 @@ module.exports =  function (context, req) {
     let secret = process.env.AzureADClientSecret;
     let clientId = process.env.AzureADClientID;
     let domain = process.env.AzureADTenantID;
+    appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
     msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
         const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
         var keyVaultname = process.env.AzureKeyVaultName;
@@ -41,6 +44,8 @@ module.exports =  function (context, req) {
         let error = false;
         request = new Request(sqlQuery, function(err) {
             if (err) { 
+                let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                client.trackException({exception: err.message, properties: props});
                 error = true;
                 context.res = {
                     status: 500,             
@@ -98,7 +103,8 @@ module.exports =  function (context, req) {
             let sqlQuery = 'uspCreateDevice';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
-                    console.log(err.message);
+                    let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                    client.trackException({exception: err.message, properties: props});
                     error = true;
                     context.res = {
                         status: 500,             
@@ -160,7 +166,8 @@ module.exports =  function (context, req) {
             let sqlQuery = 'fota_uspUpdateDevice';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
-                    console.log(err.message);
+                    let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                    client.trackException({exception: err.message, properties: props});
                     error = true;
                     context.res = {
                         status: 500,             
