@@ -42,7 +42,7 @@ module.exports = function (context, req) {
     function getFirmwareManifest(blobConnection, connection) {
         let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
         let reportedVersion = _.get(req.query, 'ver', ''); //pull reported firmware version from query parameter
-        let sqlQuery = 'uspGetDeviceFirmwareManifest';
+        let sqlQuery = 'fota_uspGetDeviceFirmwareManifest';
         //represents an azure sql query request that can be executed on a connection
         request = new Request(sqlQuery, function(err) {
             if (err) {
