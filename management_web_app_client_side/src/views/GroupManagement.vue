@@ -162,46 +162,77 @@ export
         this.groupUpdateBodyMFOX.name = this.editGroupName;
         this.groupUpdateBodyMFOX.desired_fw_id = this.editGroupFirmware;
         let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups/${this.editGroupId}`;
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.put(apiEndpoint,this.groupUpdateBodyMFOX, {headers: {'authorization': accessToken}})
+        authentication.getAccessToken()
           .then( (response) => {
-            console.log(`response: ${response}`); // eslint-disable-line
-            this.getAllGroupsFromMFOX();
+            let accessToken = `Bearer ${response}`;
+            this.axios.put(apiEndpoint,this.groupUpdateBodyMFOX, {headers: {'authorization': accessToken}})
+              .then( (response) => {
+                console.log(`response: ${response}`); // eslint-disable-line
+                this.getAllGroupsFromMFOX();
+              }).catch( (error) => {
+                this.$refs['modal-delete-error'].show();
+                this.deleteError = error;
+              });
           }).catch( (error) => {
-            this.$refs['modal-delete-error'].show();
-            this.deleteError = error;
-        });
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
+          });
+        
+
       },
       getAllGroupsFromMFOX() {
-        this.toggleLoading(true);
-        let apiEndpoint1 = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups`;
-        let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
-          .then((response) => {
-            this.toggleLoading(false);
-            this.allGroups = response.data;
-          }).catch((error) =>{
-            console.log(error);
-            if (error.toString().includes("404")) {
-              this.allGroups = []
-            }
-            this.toggleLoading(false);
-            console.log(`error: ${error}`); // eslint-disable-line
-          });
+
+        authentication.getAccessToken()
+          .then( (token) => {
+            //console.log('------------------------');
+            //console.log(token);
+            //console.log('------------------------');
+            this.toggleLoading(true);
+            let apiEndpoint1 = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups`;
+            let accessToken1 = `Bearer ${token}`;
+            this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
+              .then((response) => {
+                this.toggleLoading(false);
+                this.allGroups = response.data;
+              }).catch((error) =>{
+                console.log(`error: ${error}`); // eslint-disable-line
+                console.log(error); // eslint-disable-line
+                if (error.toString().includes("404")) {
+                  this.allGroups = []
+                }
+                this.toggleLoading(false);
+                console.log(`error: ${error}`); // eslint-disable-line
+              });
+        }).catch( (error) => {
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
+        });
+
+
+
       },
       getAllFirmwareFromMFOX() {
-        let apiEndpoint2 = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
-        let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
-          .then((response) => {       
-            //populate firmware drop down list array
-            var arrayLength = response.data.length;
-            for (var i = 0; i < arrayLength; i++) {
-                this.ddFirmware.push({ text: response.data[i]['version'], value: response.data[i]['firmware_id'] });
-            }
-          }).catch(function (error) {
-            console.log(`error: ${error}`); // eslint-disable-line
-          });
+
+
+        authentication.getAccessToken()
+          .then( (token) => {
+            let apiEndpoint2 = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
+            let accessToken2 = `Bearer ${token}`;
+            //console.log('getAllGroupsFromMFOX(): ' + accessToken2);
+            this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
+              .then((response) => {       
+                //populate firmware drop down list array
+                var arrayLength = response.data.length;
+                for (var i = 0; i < arrayLength; i++) {
+                    this.ddFirmware.push({ text: response.data[i]['version'], value: response.data[i]['firmware_id'] });
+                }
+              }).catch(function (error) {
+                console.log(`error: ${error}`); // eslint-disable-line
+              });
+        }).catch( (error) => {
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
+        });
       },
       handleSubmit() {
         this.groupUploadBodyMFOX = {
@@ -224,15 +255,21 @@ export
         reader.readAsBinaryString(file);
       },
       uploadToMFOX() {
-        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups`;
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.post(apiEndpoint, this.groupUploadBodyMFOX, {headers: {'authorization': accessToken}})
-          .then( (response) => {
-            console.log(`response: ${response}`); // eslint-disable-line
-            this.getAllGroupsFromMFOX();
-          }).catch( (error) => {
-            console.log(`error: ${error}`); // eslint-disable-line
-          });
+        authentication.getAccessToken()
+          .then( (token) => {
+            let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups`;
+            let accessToken = `Bearer ${token}`;
+            this.axios.post(apiEndpoint, this.groupUploadBodyMFOX, {headers: {'authorization': accessToken}})
+              .then( (response) => {
+                console.log(`response: ${response}`); // eslint-disable-line
+                this.getAllGroupsFromMFOX();
+              }).catch( (error) => {
+                console.log(`error: ${error}`); // eslint-disable-line
+              });
+        }).catch( (error) => {
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
+        });
       },
       toggleLoading(state) {
         this.isLoading = state;
@@ -240,9 +277,6 @@ export
     },// methods
     created:
       function(){
-        console.log('line243');
-        console.log(process.env);
-        console.log(process.env.VUE_APP_API_ENDPOINT_URL);
         this.getAllGroupsFromMFOX();
         this.getAllFirmwareFromMFOX();
       }

@@ -46,6 +46,8 @@ export
       return {
         firmwareVersion: '',
         firmwareSignature: '',
+        firmwareImage: '',
+        firmwareFileContent: '',
         firmware: [],
         firmwareUploadBodyMFOX: {},
         items: [],
@@ -114,53 +116,78 @@ export
         reader.readAsBinaryString(file);
       },
       getAzureStorageSasToken(blobName) {
-        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/upload_uri?name=${blobName}`;
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
         var fileContent = this.firmwareFileContent;
-        this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
-        .then((response) => {
-          this.uploadFirmwareToAzureBlob(response.data.sas_uri, fileContent, blobName);
-        }).catch(function (error) {
-          console.log(`error: ${error}`); // eslint-disable-line
+        authentication.getAccessToken()
+          .then( (token) => {
+            let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/upload_uri?name=${blobName}`;
+            let accessToken = `Bearer ${token}`;
+            this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
+            .then((response) => {
+              this.uploadFirmwareToAzureBlob(response.data.sas_uri, fileContent, blobName);
+            }).catch(function (error) {
+              console.log(`error: ${error}`); // eslint-disable-line
+            });
+        }).catch( (error) => {
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
         });
+
+
       },
       uploadToMFOX() {
-        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
-          .then( (response) => {
-            this.getAllFirmwareFromMFOX();
-          }).catch(function (error) {
-            console.log(`error: ${error}`); // eslint-disable-line
+        authentication.getAccessToken()
+          .then( (token) => {
+            let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
+            let accessToken = `Bearer ${token}`;
+            this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
+              .then( () => {
+                this.getAllFirmwareFromMFOX();
+              }).catch(function (error) {
+                console.log(`error: ${error}`); // eslint-disable-line
+            });
+        }).catch( (error) => {
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
         });
       },
       getAllFirmwareFromMFOX() {
-        this.toggleLoading(true);
-        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
-          .then((response) => {
-            this.toggleLoading(false);
-            this.items = response.data;
-          }).catch((error) => {
-            this.toggleLoading(false);
-            if (error.toString().includes("404")) {
-              this.items = [];
-            }
-            console.log(`error: ${error}`); // eslint-disable-line
+        authentication.getAccessToken()
+          .then( (token) => {
+            this.toggleLoading(true);
+            let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
+            let accessToken = `Bearer ${token}`;
+            this.axios.get(apiEndpoint, {headers: {'authorization': accessToken}})
+              .then((response) => {
+                this.toggleLoading(false);
+                this.items = response.data;
+              }).catch((error) => {
+                this.toggleLoading(false);
+                if (error.toString().includes("404")) {
+                  this.items = [];
+                }
+                console.log(`error: ${error}`); // eslint-disable-line
+            });
+        }).catch( (error) => {
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
         });
       },
-
       deleteFirmewareFromMFOX(version) {
-        this.$refs['modal-confirm-delete'].hide();
-        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware/${version}`;
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
-        .then( (response) => {
-          this.getAllFirmwareFromMFOX();
+        authentication.getAccessToken()
+          .then( (token) => {
+            this.$refs['modal-confirm-delete'].hide();
+            let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware/${version}`;
+            let accessToken = `Bearer ${token}`;
+            this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
+            .then( () => {
+              this.getAllFirmwareFromMFOX();
+            }).catch( (error) => {
+              this.deleteError = error.response.data.error;
+              this.$refs['modal-delete-error'].show();
+            });
         }).catch( (error) => {
-          this.deleteError = error.response.data.error;
-          this.$refs['modal-delete-error'].show();
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
         });
       },
       async uploadFirmwareToAzureBlob(uploadUri, fileContent) {
@@ -198,7 +225,7 @@ export
           console.log(`clipboard: ${e.text}`); // eslint-disable-line
         }, function (e) {
           console.log('clipboard error: '); // eslint-disable-line
-          console.log(e);
+          console.log(e); // eslint-disable-line
         })
       }
   },

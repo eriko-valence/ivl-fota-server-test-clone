@@ -78,61 +78,85 @@ export
         this.uploadToMFOX();
       },
       uploadToMFOX() {
-        let apiEndpoint = `${shared.getObjectKey(process.env, 'VUE_APP_API_ENDPOINT_URL')}/v1/devices`
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.post(apiEndpoint, this.deviceUploadBodyMFOX, {headers: {'authorization': accessToken}})
-        .then( (response) => {
-          console.log(`response: ${response}`); // eslint-disable-line
-          this.getAllDevices();
+        authentication.getAccessToken()
+          .then( (token) => {
+            let apiEndpoint = `${shared.getObjectKey(process.env, 'VUE_APP_API_ENDPOINT_URL')}/v1/devices`
+            let accessToken = `Bearer ${token}`;
+            this.axios.post(apiEndpoint, this.deviceUploadBodyMFOX, {headers: {'authorization': accessToken}})
+            .then( (response) => {
+              console.log(`response: ${response}`); // eslint-disable-line
+              this.getAllDevices();
+            }).catch( (error) => {
+              console.log(`error: ${error}`); // eslint-disable-line
+            });
         }).catch( (error) => {
-          console.log(`error: ${error}`); // eslint-disable-line
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
         });
       },
       getAllDevices() {
-        this.toggleLoading(true);
-        let apiEndpoint1 = `${shared.getObjectKey(process.env, 'VUE_APP_API_ENDPOINT_URL')}/v1/devices`
-        let accessToken1 = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
-          .then((response) => {
-            this.toggleLoading(false);
-            this.allDevices = response.data;
-          }).catch( (error) => {
-            if (error.toString().includes("404")) {
-              this.allDevices = [];
-            }
-            this.toggleLoading(false);
+        authentication.getAccessToken()
+          .then( (token) => {
+            this.toggleLoading(true);
+            let apiEndpoint1 = `${shared.getObjectKey(process.env, 'VUE_APP_API_ENDPOINT_URL')}/v1/devices`
+            let accessToken1 = `Bearer ${token}`;
+            this.axios.get(apiEndpoint1, {headers: {'authorization': accessToken1}})
+              .then((response) => {
+                this.toggleLoading(false);
+                this.allDevices = response.data;
+              }).catch( (error) => {
+                if (error.toString().includes("404")) {
+                  this.allDevices = [];
+                }
+                this.toggleLoading(false);
+            });
+        }).catch( (error) => {
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
         });
       },
       getAllGroups() {
-        let apiEndpoint2 = `${shared.getObjectKey(process.env, 'VUE_APP_API_ENDPOINT_URL')}/v1/groups`
-        let accessToken2 = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
-        .then((response) => {                
-          //populate group drop down list array
-          var arrayLength = response.data.length;
-          for (var i = 0; i < arrayLength; i++) {
-              this.ddGroups.push({ value: response.data[i]['group_id'], text: response.data[i]['name'] });
-          }
-        }).catch(function (error) {
-          console.log(`error: ${error}`); // eslint-disable-line
+        authentication.getAccessToken()
+          .then( (token) => {
+            let apiEndpoint2 = `${shared.getObjectKey(process.env, 'VUE_APP_API_ENDPOINT_URL')}/v1/groups`
+            let accessToken2 = `Bearer ${token}`;
+            this.axios.get(apiEndpoint2, {headers: {'authorization': accessToken2}})
+            .then((response) => {                
+              //populate group drop down list array
+              var arrayLength = response.data.length;
+              for (var i = 0; i < arrayLength; i++) {
+                  this.ddGroups.push({ value: response.data[i]['group_id'], text: response.data[i]['name'] });
+              }
+            }).catch(function (error) {
+              console.log(`error: ${error}`); // eslint-disable-line
+            });
+        }).catch( (error) => {
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
         });
       },
       toggleLoading(state) {
         this.isLoading = state;
       },
       updateDeviceInMFOX(item) {
-        let deviceUpdateBodyMFOX = {
-          deviceid: item.deviceid,
-          group_id : item.group_id
-        };
-        let apiEndpoint = `${shared.getObjectKey(process.env, 'VUE_APP_API_ENDPOINT_URL')}/v1/devices/${item.deviceid}`
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.put(apiEndpoint, deviceUpdateBodyMFOX, {headers: {'authorization': accessToken}})
-        .then( (response) => {
-          console.log(`response: ${response}`); // eslint-disable-line
-          this.getAllDevices();
+        authentication.getAccessToken()
+          .then( (token) => {
+            let deviceUpdateBodyMFOX = {
+              deviceid: item.deviceid,
+              group_id : item.group_id
+            };
+            let apiEndpoint = `${shared.getObjectKey(process.env, 'VUE_APP_API_ENDPOINT_URL')}/v1/devices/${item.deviceid}`
+            let accessToken = `Bearer ${token}`;
+            this.axios.put(apiEndpoint, deviceUpdateBodyMFOX, {headers: {'authorization': accessToken}})
+            .then( (response) => {
+              console.log(`response: ${response}`); // eslint-disable-line
+              this.getAllDevices();
+            }).catch( (error) => {
+              console.log(`error: ${error}`); // eslint-disable-line
+            });
         }).catch( (error) => {
-          console.log(`error: ${error}`); // eslint-disable-line
+            console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            authentication.signOut()
         });
       }
     },
