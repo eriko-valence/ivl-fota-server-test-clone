@@ -8,7 +8,7 @@
                     "GET"
                 ]
             },
-            "backendUri": "https://ivlapidevice.azurewebsites.net/api/CheckFirmware/{deviceid:int}"
+            "backendUri": "https://ivlapidevice-dev.azurewebsites.net/api/CheckFirmware/{deviceid:int}"
         }
     }
 }
