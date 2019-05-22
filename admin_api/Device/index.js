@@ -16,6 +16,7 @@ module.exports =  function (context, req) {
     let clientId = process.env.AzureADClientID;
     let domain = process.env.AzureADTenantID;
     appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
+	let client = appInsights.defaultClient;
     msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
         const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
         var keyVaultname = process.env.AzureKeyVaultName;

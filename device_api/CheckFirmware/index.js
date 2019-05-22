@@ -7,11 +7,15 @@ const msRestAzure = require('ms-rest-azure');
 const helper = require('../Shared/helper');
 const apihelper = require('../Shared/apimappings');
 const models = require('../Shared/models');
+const errors = require('../Shared/errors');
+const appInsights = require("applicationinsights");
 
 module.exports = function (context, req) {
     let secret = process.env.AzureADClientSecret;
     let clientId = process.env.AzureADClientID;
     let domain = process.env.AzureADTenantID;
+    appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
+    let client = appInsights.defaultClient;
     msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
         const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
         var keyVaultname = process.env.AzureKeyVaultName;
@@ -41,7 +45,19 @@ module.exports = function (context, req) {
         let sqlQuery = 'uspGetDeviceFirmwareManifest';
         //represents an azure sql query request that can be executed on a connection
         request = new Request(sqlQuery, function(err) {
-            if (err) {console.log(err); }
+            if (err) {
+                console.log(err); 
+                let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                client.trackException({exception: err.message, properties: props});
+                context.res = {
+                    status: 500,             
+                    body: {
+                        code: 500,
+                        error: 'An error occured while retrieving devices from the database.'
+                    }
+                };
+                context.done();
+            }
         });
 
         request.addParameter('deviceid', TYPES.Int, deviceid);
