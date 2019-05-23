@@ -180,7 +180,7 @@ module.exports =  function (context, req) {
                     context.done();
                 }
             });
-            request.addParameter('deviceid', TYPES.BigInt, deviceid);
+            request.addParameter('deviceid', TYPES.VarChar, deviceid);
             request.addParameter('groupid', TYPES.Int, groupid);
             request.addOutputParameter('result', TYPES.Int);
             let devices = [];
