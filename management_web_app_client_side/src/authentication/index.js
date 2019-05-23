@@ -69,12 +69,18 @@ export default {
     return false;
   },
   getAccessToken() {
+    return new Promise((resolve, reject) => {
     // getCachedToken will only return a valid, non-expired token.
-    if (this.authenticationContext.getCachedToken(config.resourceApi)) { 
-      return this.authenticationContext.getCachedToken(config.resourceApi); 
+    if (this.authenticationContext.getCachedToken(config.resourceApi)) {
+      resolve(this.authenticationContext.getCachedToken(config.resourceApi)); 
     } else {
-      return null;
+      this.acquireToken().then((token) => {
+        resolve(token);
+      }).catch((error) => {
+        reject(error);
+      });
     }
+  });
   },
   /**
    * @return An ADAL user profile object.
