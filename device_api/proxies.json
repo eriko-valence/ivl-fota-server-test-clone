@@ -3,12 +3,12 @@
     "proxies": {
         "v1": {
             "matchCondition": {
-                "route": "v1/fota/fwcheck/{deviceid:int}",
+                "route": "v1/fota/fwcheck/{deviceid}",
                 "methods": [
                     "GET"
                 ]
             },
-            "backendUri": "https://ivlapidevice-dev.azurewebsites.net/api/CheckFirmware/{deviceid:int}"
+            "backendUri": "https://ivlapidevice-dev.azurewebsites.net/api/CheckFirmware/{deviceid}"
         }
     }
 }

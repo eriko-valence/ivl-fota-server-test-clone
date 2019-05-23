@@ -60,7 +60,7 @@ module.exports = function (context, req) {
             }
         });
 
-        request.addParameter('deviceid', TYPES.Int, deviceid);
+        request.addParameter('deviceid', TYPES.VarChar, deviceid);
 
         let desiredFirmware = [];
         let apiFieldMappings = apihelper.getFirmwareManifestFieldMappings();
