@@ -79,14 +79,26 @@ module.exports = function (context, req) {
                     status: 204
                 };
                 } else {
-                    let sasToken = helper.generateSasToken(blobConnection, desiredFirmware[0]['blob_container'], desiredFirmware[0]['blob_name'], null);             
-                    let model = models.getApiResponseModelFirmwareManifest();
-                    model = _.pick(desiredFirmware[0], _.keys(model));
-                    model.uri = sasToken.uri;
-                    context.res = {
-                        status: 200,
-                        body: model
-                    };
+                    let blobContainer = _.get(desiredFirmware[0], 'blob_container', null);
+                    let blobName = _.get(desiredFirmware[0], 'blob_name', null);
+                    if (blobContainer !== null && blobName !== null) {
+                        let sasToken = helper.generateSasToken(blobConnection, blobContainer, blobName, null);             
+                        let model = models.getApiResponseModelFirmwareManifest();
+                        model = _.pick(desiredFirmware[0], _.keys(model));
+                        model.uri = sasToken.uri;
+                        context.res = {
+                            status: 200,
+                            body: model
+                        };
+                    } else {
+                        let errMsg = 'desired firmware blob container and/or name missing';
+                        let props = errors.getCustomProperties(500, req.method, req.url, errMsg, null, req);
+                        client.trackException({exception: errMsg, properties: props});
+                        context.res = {
+                            status: 500,
+                            body: 'An error occured while retrieving devices from the database.'
+                        };
+                    }
                 }
             } else {
                 context.res = {
