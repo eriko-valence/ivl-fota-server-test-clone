@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^10.3.0",
+    "@types/adal-angular": "^1.0.1",
     "adal-angular": "^1.0.17",
     "axios": "^0.18.0",
     "bootstrap-vue": "^2.0.0-rc.20",
