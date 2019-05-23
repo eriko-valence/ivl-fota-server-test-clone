@@ -12,7 +12,10 @@ module.exports = {
             GroupId: 'group_id',
             DesiredFirmwareVersion: 'desired_fw',
             ReportedFirmwareVersion: 'reported_fw',
-            LastReported: 'last_reported'
+            LastReported: 'last_reported',
+            MFID: 'MFID',
+            SN: 'SN',
+            ShortSN: 'ShortSN'
         };
     },
     
