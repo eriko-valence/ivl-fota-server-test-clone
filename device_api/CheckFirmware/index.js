@@ -89,7 +89,7 @@ module.exports = function (context, req) {
                         let sasToken = helper.generateSasToken(blobConnection, blobContainer, blobName, null);             
                         let model = models.getApiResponseModelFirmwareManifest();
                         model = _.pick(desiredFirmware[0], _.keys(model));
-                        model.uri = sasToken.uri;
+                        model.uri = sasToken.uri.toString().replace("https", "http");
                         context.res = {
                             status: 200,
                             body: model

@@ -76,7 +76,7 @@ module.exports =  function (context, req) {
                 _.forEach(firmware, function(fw, key) {
                     let bloburi = helper.getAzureBlobUri(fw['blob_container'], fw['blob_name']);
                     let fw_response = _.pick(fw, _.keys(model));
-                    fw_response.uri = bloburi;
+                    fw_response.uri = bloburi.toString().replace("https", "http");
                     apiResponseBody.push(fw_response);
                   });
                   let sort = helper.processSortQueryString(sortBy);
