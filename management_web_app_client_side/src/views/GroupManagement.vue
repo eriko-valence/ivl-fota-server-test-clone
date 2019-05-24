@@ -145,36 +145,51 @@ export
         }
       },
       deleteGroupFromMFOX(group_id) {
-        this.$refs['modal-confirm-delete'].hide();
-        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups/${group_id}`;
-        let accessToken = `Bearer ${authentication.getAccessToken()}`;
-        this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
-          .then( (response) => {
-            console.log(`response: ${response}`); // eslint-disable-line
-            this.getAllGroupsFromMFOX();
-          }).catch( (error) => {
-            this.deleteError = error.response.data.error;
-            this.$refs['modal-delete-error'].show();
-        });
-    },
-      updateGroupInMFOX() {
-        this.$refs['edit-group-modal'].hide()
-        this.groupUpdateBodyMFOX.name = this.editGroupName;
-        this.groupUpdateBodyMFOX.desired_fw_id = this.editGroupFirmware;
-        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups/${this.editGroupId}`;
+
         authentication.getAccessToken()
-          .then( (response) => {
-            let accessToken = `Bearer ${response}`;
-            this.axios.put(apiEndpoint,this.groupUpdateBodyMFOX, {headers: {'authorization': accessToken}})
+          .then( (token) => {
+            this.$refs['modal-confirm-delete'].hide();
+            let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups/${group_id}`;
+            let accessToken = `Bearer ${token}`;
+            this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
               .then( (response) => {
                 console.log(`response: ${response}`); // eslint-disable-line
                 this.getAllGroupsFromMFOX();
               }).catch( (error) => {
+                this.deleteError = error.response.data.error;
+                this.$refs['modal-delete-error'].show();
+            });
+        }).catch( (error) => {
+            console.log('sign out the user');
+            authentication.signOut() //force user to sign out to fix the token issue
+        });
+
+
+    },
+      updateGroupInMFOX() {
+        console.log('updateGroupInMFOX() => START');
+        this.$refs['edit-group-modal'].hide()
+        this.groupUpdateBodyMFOX.name = this.editGroupName;
+        this.groupUpdateBodyMFOX.desired_fw_id = this.editGroupFirmware;
+        let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups/${this.editGroupId}`;
+        console.log('updateGroupInMFOX() => Get the access token');
+        authentication.getAccessToken()
+          .then( (response) => {
+            console.log('updateGroupInMFOX() => access token acquired');
+            let accessToken = `Bearer ${response}`;
+            this.axios.put(apiEndpoint,this.groupUpdateBodyMFOX, {headers: {'authorization': accessToken}})
+              .then( (response) => {
+                console.log(`response: ${response}`); // eslint-disable-line
+                console.log('updateGroupInMFOX() => END');
+                this.getAllGroupsFromMFOX();
+              }).catch( (error) => {
+                console.log('updateGroupInMFOX() => END');
                 this.$refs['modal-delete-error'].show();
                 this.deleteError = error;
               });
           }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
+            console.log('updateGroupInMFOX() => END');
             authentication.signOut()
           });
         
