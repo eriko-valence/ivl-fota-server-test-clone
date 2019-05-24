@@ -86,6 +86,10 @@ module.exports = {
             token: sasToken,
             uri: blobService.getUrl(container, blobName, sasToken, true)
         }
+    },
+    standardizeVersionNumber(sVersion) {
+        sVersion = sVersion.replace(new RegExp('^' + 'v'), ''); 
+        return sVersion;
     }
     
  }
