@@ -74,11 +74,16 @@ module.exports = function (context, req) {
         //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
             if (desiredFirmware.length > 0) {
-                //make sure to strip off 'v' prefix (if it exists) before comparing versions
+
                 let desiredVersion = _.get(desiredFirmware[0], 'version', '');
-                desiredVersion = helper.standardizeVersionNumber(desiredVersion);
-                reportedVersion = helper.standardizeVersionNumber(reportedVersion);
-                if (desiredVersion === reportedVersion) {
+                /*
+                The Cloud Device API needs to make sure the desiredFirmware version sent to fridges 
+                is always newer than the reportedFirmware version sent by the fridge.  If not, it will 
+                not notify client of available FW (i.e. “everything is fine” 204 response is required 
+                when the fridge reported version is newer, or the same, than the SQL database resident 
+                desired version).
+                */
+                if (!helper.isVersionNewer(reportedVersion, desiredVersion)) {
                 context.res = {
                     status: 204
                 };

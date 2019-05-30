@@ -90,6 +90,81 @@ module.exports = {
     standardizeVersionNumber(sVersion) {
         sVersion = sVersion.replace(new RegExp('^' + 'v'), ''); 
         return sVersion;
+    },
+    isVersionNewer(reportedVersion, desiredVersion) {
+        var regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/;
+
+        reportedVersion = regex.exec(reportedVersion);
+        desiredVersion = regex.exec(desiredVersion);
+        
+        if (reportedVersion !== null) { 
+          reportedVersion = reportedVersion.slice(1);
+        }
+        if (desiredVersion !== null) {
+          desiredVersion = desiredVersion.slice(1);
+        }
+        if (reportedVersion === null) {
+            console.log('reported version failed regex!');
+            return false;
+        }
+        if (desiredVersion === null) {
+            console.log('desired version failed regex!');
+            return false;
+        }
+        
+        if (reportedVersion.length !== 4) {
+            console.log('Could not get expected 4 groups out of reported version')
+            return false;
+        }
+        if (desiredVersion.length !== 4) {
+            console.log('Could not get expected 4 groups out of desired version')
+            return false;
+        }
+            
+        // compare Major version 
+        if (desiredVersion[0] < reportedVersion[0]) {
+            console.log('Desired version is older - major component of desired version is older than reported');
+            return false;
+        }
+        if (desiredVersion[0] > reportedVersion[0]) {
+            console.log('Desired version is newer - major component of desired version is newer than reported')
+            return true;
+        }
+        
+        // compare Minor version
+        if (desiredVersion[1] < reportedVersion[1]) {
+            console.log('Desired version is older - minor component of desired version is older than reported');
+            return false;
+        }
+        if (desiredVersion[1] > reportedVersion[1]) {
+            console.log('Desired version is newer - minor component of desired version is newer than reported')
+            return true;
+        }
+        
+        // compare Revision
+        if (desiredVersion[2] < reportedVersion[2]) {
+            console.log('Desired version is older - revision component of desired version is older than reported');
+            return false;
+        }
+        if (desiredVersion[2] > reportedVersion[2]) {
+            console.log('Desired version is newer - revision component of desired version is newer than reported')
+            return true;
+        }
+        
+        // compare Sequence
+        if (desiredVersion[3] < reportedVersion[3]) {
+            console.log('Desired version is older - sequence component of desired version is older than reported');
+            return false;
+        }
+        if (desiredVersion[3] > reportedVersion[3]) {
+            console.log('Desired version is newer - sequence component of desired version is newer than reported')
+            return true;
+        }
+        
+        // must be the same if we get here
+        console.log('Desired version is the same as reported, so not newer')
+        return false;
+
     }
     
  }
