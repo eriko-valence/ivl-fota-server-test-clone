@@ -43,7 +43,7 @@ export
         ddGroups: [],
         fields: [
           { key: 'deviceid', label: 'Fridge ID', sortable: true, sortDirection: 'desc' },
-          { key: 'SN', label: 'SN', sortable: true, sortDirection: 'desc' },
+          { key: 'ShortSN', label: 'Short SN', sortable: true, sortDirection: 'desc' },
           { key: 'MFID', label: 'MF', sortable: true, sortDirection: 'desc' },
           { key: 'group', label: 'Group', sortable: true,},
           { key: 'desired_fw', label: 'Desired FW Version', sortable: true, class: 'text-center' },
