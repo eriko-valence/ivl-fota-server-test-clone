@@ -92,7 +92,16 @@ module.exports = {
         return sVersion;
     },
     isVersionNewer(reportedVersion, desiredVersion) {
-        var regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/;
+
+        /*
+            05.30.2019 - Updated versioning specs:
+            --------------------------------------------------------------
+            v0.26.6-0 (CURRENT)
+            v0.26.7-0 (REVISION++) 
+            v0.27.6-0 (MINOR++)
+            v1.00.0-0 (MAJOR++)
+        */
+        var regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)$/;
 
         reportedVersion = regex.exec(reportedVersion);
         desiredVersion = regex.exec(desiredVersion);
