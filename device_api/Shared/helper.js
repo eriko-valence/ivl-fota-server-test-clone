@@ -101,7 +101,7 @@ module.exports = {
             v0.27.6-0 (MINOR++)
             v1.00.0-0 (MAJOR++)
         */
-        var regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)$/;
+        var regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/
 
         reportedVersion = regex.exec(reportedVersion);
         desiredVersion = regex.exec(desiredVersion);
