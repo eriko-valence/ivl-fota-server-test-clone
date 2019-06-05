@@ -12,16 +12,27 @@ const appInsights = require("applicationinsights");
 
 module.exports = function (context, req) {
     let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
+    let reportedVersion = _.get(req.query, 'ver', null); //pull reported firmware version from query parameter
     if (!(helper.isIntegerOnly(deviceid))) {
         context.res = {
             status: 400,             
             body: {
                 code: 400,
-                error: 'Invalidly formatted query parameter'
+                error: 'Invalid fridge id route parameter'
             }
         };
         context.done();
-    } else {
+    } else if (reportedVersion === null) {
+        context.res = {
+            status: 400,             
+            body: {
+                code: 400,
+                error: 'missing ver query parameter'
+            }
+        };
+        context.done();
+    } 
+    else {
         let secret = process.env.AzureADClientSecret;
         let clientId = process.env.AzureADClientID;
         let domain = process.env.AzureADTenantID;
