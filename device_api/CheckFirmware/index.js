@@ -23,11 +23,17 @@ module.exports = function (context, req) {
         let var1 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginName", "");
         let var2 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginPass", "");
         let var3 = keyVaultClient.getSecret(vaultUri, "AzureBlobStorageConnectionString", "");
-        Promise.all([var1, var2, var3]).then(function(results) {
+        let var4 = keyVaultClient.getSecret(vaultUri, "AzureSqlDatabaseName", "");
+        let var5 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerName", "");
+        Promise.all([var1, var2, var3, var4, var5]).then(function(results) {
             let azureSqlLoginName = _.get(results[0], 'value', '');
             let azureSqlLoginPass = _.get(results[1], 'value', '');
             let azureBlobStorageConnectionString = _.get(results[2], 'value', '');
-            let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass); //build out azure sql config
+            let azureSqlDatabaseName = _.get(results[3], 'value', '');
+            let azureSqlServerName = _.get(results[4], 'value', '');
+            console.log(azureSqlDatabaseName);
+            console.log(azureSqlServerName);
+            let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
             var connection = new Connection(config);
             connection.on('connect', function(err) {
                 getFirmwareManifest(azureBlobStorageConnectionString, connection);
@@ -46,7 +52,7 @@ module.exports = function (context, req) {
         //represents an azure sql query request that can be executed on a connection
         request = new Request(sqlQuery, function(err) {
             if (err) {
-                console.log(err); 
+                console.log(err);
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                 client.trackException({exception: err.message, properties: props});
                 context.res = {

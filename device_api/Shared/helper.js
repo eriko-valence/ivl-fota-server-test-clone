@@ -2,7 +2,7 @@ var _ = require('lodash');
 var azure = require('azure-storage');
 
 module.exports = {
-    getConfig: function(login, pass) {
+    getConfig: function(login, pass, svrname, dbname) {
         return {
             authentication: {
                 options: {
@@ -11,10 +11,10 @@ module.exports = {
                 },
                 type: 'default'
             },
-            server: process.env.AzureSqlServerName,
+            server: svrname,
             options:
             {
-                database: process.env.AzureSqlDatabaseName,
+                database: dbname,
                 encrypt: true
             }
         };
