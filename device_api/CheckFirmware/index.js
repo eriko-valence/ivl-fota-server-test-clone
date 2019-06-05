@@ -11,35 +11,45 @@ const errors = require('../Shared/errors');
 const appInsights = require("applicationinsights");
 
 module.exports = function (context, req) {
-    let secret = process.env.AzureADClientSecret;
-    let clientId = process.env.AzureADClientID;
-    let domain = process.env.AzureADTenantID;
-    appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
-    let client = appInsights.defaultClient;
-    msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
-        const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
-        var keyVaultname = process.env.AzureKeyVaultName;
-        var vaultUri = "https://" + keyVaultname + ".vault.azure.net/";
-        let var1 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginName", "");
-        let var2 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginPass", "");
-        let var3 = keyVaultClient.getSecret(vaultUri, "AzureBlobStorageConnectionString", "");
-        let var4 = keyVaultClient.getSecret(vaultUri, "AzureSqlDatabaseName", "");
-        let var5 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerName", "");
-        Promise.all([var1, var2, var3, var4, var5]).then(function(results) {
-            let azureSqlLoginName = _.get(results[0], 'value', '');
-            let azureSqlLoginPass = _.get(results[1], 'value', '');
-            let azureBlobStorageConnectionString = _.get(results[2], 'value', '');
-            let azureSqlDatabaseName = _.get(results[3], 'value', '');
-            let azureSqlServerName = _.get(results[4], 'value', '');
-            console.log(azureSqlDatabaseName);
-            console.log(azureSqlServerName);
-            let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
-            var connection = new Connection(config);
-            connection.on('connect', function(err) {
-                getFirmwareManifest(azureBlobStorageConnectionString, connection);
+    let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
+    if (!(helper.isIntegerOnly(deviceid))) {
+        context.res = {
+            status: 400,             
+            body: {
+                code: 400,
+                error: 'Invalidly formatted query parameter'
+            }
+        };
+        context.done();
+    } else {
+        let secret = process.env.AzureADClientSecret;
+        let clientId = process.env.AzureADClientID;
+        let domain = process.env.AzureADTenantID;
+        appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
+        let client = appInsights.defaultClient;
+        msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
+            const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
+            var keyVaultname = process.env.AzureKeyVaultName;
+            var vaultUri = "https://" + keyVaultname + ".vault.azure.net/";
+            let var1 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginName", "");
+            let var2 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginPass", "");
+            let var3 = keyVaultClient.getSecret(vaultUri, "AzureBlobStorageConnectionString", "");
+            let var4 = keyVaultClient.getSecret(vaultUri, "AzureSqlDatabaseName", "");
+            let var5 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerName", "");
+            Promise.all([var1, var2, var3, var4, var5]).then(function(results) {
+                let azureSqlLoginName = _.get(results[0], 'value', '');
+                let azureSqlLoginPass = _.get(results[1], 'value', '');
+                let azureBlobStorageConnectionString = _.get(results[2], 'value', '');
+                let azureSqlDatabaseName = _.get(results[3], 'value', '');
+                let azureSqlServerName = _.get(results[4], 'value', '');
+                let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
+                var connection = new Connection(config);
+                connection.on('connect', function(err) {
+                    getFirmwareManifest(azureBlobStorageConnectionString, connection);
+                });
             });
         });
-    });
+    }
 
     /*
       Returns the manifest for a version of firmware that the server determines that the fridge 
