@@ -41,14 +41,6 @@ variable "firmware_blob_prefix" {
   default = ""
 }
 
-variable "azure_sql_database_name" {
-  default = ""
-}
-
-variable "azure_sql_server_name" {
-  default = ""
-}
-
 resource "azurerm_resource_group" "rg-infrastructure" {
   name     = "rg-${var.base_name}-${var.env_prefix_lower}"
   location = "${var.location}"
@@ -151,8 +143,6 @@ resource "azurerm_function_app" "fa-device-api" {
 	"AzureBlobEndpoint" = "${azurerm_storage_account.sa-infrastructure.primary_blob_endpoint}"
 	"AzureBlobStorageDevice" = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
 	"AzureKeyVaultName" = "${azurerm_key_vault.kv-infrastructure.name}"
-	"AzureSqlDatabaseName" = "${var.azure_sql_database_name}"
-	"AzureSqlServerName" = "${var.azure_sql_server_name}"
   }
   site_config {
     linux_fx_version = "node:10.14.1"
@@ -179,8 +169,6 @@ resource "azurerm_function_app" "fa-admin-api" {
 	"AzureBlobEndpoint" = "${azurerm_storage_account.sa-infrastructure.primary_blob_endpoint}"
 	"AzureBlobStorageDevice" = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
 	"AzureKeyVaultName" = "${azurerm_key_vault.kv-infrastructure.name}"
-	"AzureSqlDatabaseName" = "${var.azure_sql_database_name}"
-	"AzureSqlServerName" = "${var.azure_sql_server_name}"
   }
   site_config {
     linux_fx_version = "node:10.14.1"

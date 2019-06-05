@@ -24,10 +24,14 @@ module.exports =  function (context, req) {
         var vaultUri = "https://" + keyVaultname + ".vault.azure.net/";
         let var1 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginName", "");
         let var2 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginPass", "");
-        Promise.all([var1, var2]).then(function(results) {
+        let var3 = keyVaultClient.getSecret(vaultUri, "AzureSqlDatabaseName", "");
+        let var4 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerName", "");
+        Promise.all([var1, var2, var3, var4]).then(function(results) {
             let azureSqlLoginName = _.get(results[0], 'value', '');
             let azureSqlLoginPass = _.get(results[1], 'value', '');
-            let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass); //build out azure sql config
+            let azureSqlDatabaseName = _.get(results[2], 'value', '');
+            let azureSqlServerName = _.get(results[3], 'value', '');
+            let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
             var connection = new Connection(config); //initiate sql database connection
             connection.on('connect', function(err) {
                 if (requestMethod === 'GET') {

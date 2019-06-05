@@ -33,6 +33,8 @@
 		- 'AzureBlobStorageConnectionString'
 		- 'AzureSqlServerLoginName'
 		- 'AzureSqlServerLoginPass'
+		- 'AzureSqlDatabaseName'
+		- 'AzureSqlServerName'
 	- Enable static website hosting (Azure Storage)
 		- Note: Terraform does not currently support Azure storage static website hosting configuration
 			- https://github.com/terraform-providers/terraform-provider-azurerm/issues/1903
