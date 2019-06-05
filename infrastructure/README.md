@@ -94,6 +94,6 @@ terraform apply -var-file="terraform.tfvars"
 	- Add authorized admin web ui users here
 		
 ## Destroy Azure infrastructure using Terraform
-    ```
-    terraform destroy
-    ```
+```
+terraform destroy
+```
