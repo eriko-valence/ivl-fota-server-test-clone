@@ -13,6 +13,7 @@ const appInsights = require("applicationinsights");
 module.exports = function (context, req) {
     let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
     let reportedVersion = _.get(req.query, 'ver', null); //pull reported firmware version from query parameter
+    console.log(reportedVersion);
     if (!(helper.isIntegerOnly(deviceid))) {
         context.res = {
             status: 400,             
@@ -31,8 +32,16 @@ module.exports = function (context, req) {
             }
         };
         context.done();
-    } 
-    else {
+    } else if (!(helper.isVersionValidFormat(reportedVersion))) {
+        context.res = {
+            status: 400,             
+            body: {
+                code: 400,
+                error: 'invalid fridge version'
+            }
+        };
+        context.done();
+    } else {
         let secret = process.env.AzureADClientSecret;
         let clientId = process.env.AzureADClientID;
         let domain = process.env.AzureADTenantID;

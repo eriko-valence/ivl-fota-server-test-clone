@@ -103,8 +103,8 @@ module.exports = {
         */
         var regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/
 
-        reportedVersion = regex.exec(reportedVersion);
-        desiredVersion = regex.exec(desiredVersion);
+        reportedVersion = this.validateVersionFormat(reportedVersion);
+        desiredVersion = this.validateVersionFormat(desiredVersion);
         
         if (reportedVersion !== null) { 
           reportedVersion = reportedVersion.slice(1);
@@ -178,6 +178,15 @@ module.exports = {
     isIntegerOnly(s) {
         let regex = /^[0-9]+$/
         let matched = regex.exec(s);
+        if (matched === null) { return false} else {return true}
+    },
+    validateVersionFormat(s) {
+        let regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/
+        let matched = regex.exec(s);
+        return matched;
+    },
+    isVersionValidFormat(s) {
+        let matched = this.validateVersionFormat(s);
         if (matched === null) { return false} else {return true}
     }
     
