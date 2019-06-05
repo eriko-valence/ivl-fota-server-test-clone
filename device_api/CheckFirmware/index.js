@@ -68,7 +68,22 @@ module.exports = function (context, req) {
                     getFirmwareManifest(azureBlobStorageConnectionString, connection);
                 });
             });
-        });
+        }).catch((err) => {
+            if (err) {
+                console.log(err);
+                let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                client.trackException({exception: err.message, properties: props});
+                error = true;
+                context.res = {
+                    status: 500,             
+                    body: {
+                        code: 500,
+                        error: 'An error occured while retrieving devices from the database.'
+                    }
+                };
+                context.done();
+            }
+          });
     }
 
     /*

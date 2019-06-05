@@ -16,7 +16,7 @@ module.exports =  function (context, req) {
     let clientId = process.env.AzureADClientID;
     let domain = process.env.AzureADTenantID;
     appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
-	let client = appInsights.defaultClient;
+    let client = appInsights.defaultClient;
     msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
         const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
         var keyVaultname = process.env.AzureKeyVaultName;
@@ -42,7 +42,22 @@ module.exports =  function (context, req) {
                 }
             });
         });
-    });
+    }).catch((err) => {
+        if (err) {
+            console.log(err);
+            let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+            client.trackException({exception: err.message, properties: props});
+            error = true;
+            context.res = {
+                status: 500,             
+                body: {
+                    code: 500,
+                    error: 'An error occured while retrieving devices from the database.'
+                }
+            };
+            context.done();
+        }
+      });
 
    function getDevices(connection) {
         let sqlQuery = 'fota_uspGetAllDevices';
