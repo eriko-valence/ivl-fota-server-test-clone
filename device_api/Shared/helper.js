@@ -174,6 +174,11 @@ module.exports = {
         console.log('Desired version is the same as reported, so not newer')
         return false;
 
+    },
+    isIntegerOnly(s) {
+        let regex = /^[0-9]+$/
+        let matched = regex.exec(s);
+        if (matched === null) { return false} else {return true}
     }
     
  }
