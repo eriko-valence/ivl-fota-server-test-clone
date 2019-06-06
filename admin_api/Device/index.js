@@ -89,6 +89,7 @@ module.exports =  function (context, req) {
         //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
             if (devices.length > 0) {
+                _.each(devices, item => item.deviceid = parseInt(item.deviceid, 10));
                 let sort = helper.processSortQueryString(sortBy);
                 if (sort.length === 1 ) {
                     let sortColumn = _.get(sort[0], 'column', '');
@@ -96,6 +97,8 @@ module.exports =  function (context, req) {
                     if (sortColumn !== '' && sortOrder !== '') {
                         devices = _.orderBy(devices, [sortColumn], [sortOrder]);
                     }
+                } else {
+                    devices = _.orderBy(devices, ['deviceid'], ['asc']);
                 }
                 context.res = {
                     status: 200,
