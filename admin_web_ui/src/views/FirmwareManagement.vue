@@ -139,6 +139,7 @@ export
           .then( (token) => {
             let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware`;
             let accessToken = `Bearer ${token}`;
+            console.log(this.firmwareUploadBodyMFOX);
             this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
               .then( () => {
                 this.getAllFirmwareFromMFOX();
@@ -178,6 +179,7 @@ export
             this.$refs['modal-confirm-delete'].hide();
             let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/firmware/${version}`;
             let accessToken = `Bearer ${token}`;
+            console.log('deleteFirmewareFromMFOX() - accessToken: ' + accessToken);
             this.axios.delete(apiEndpoint, {headers: {'authorization': accessToken}})
             .then( () => {
               this.getAllFirmwareFromMFOX();

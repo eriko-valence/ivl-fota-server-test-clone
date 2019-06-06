@@ -14,26 +14,52 @@ export default {
    * @return {Promise}
    */
   initialize() {
+    console.log('authentication.js -> START');
+
 
     this.authenticationContext = new AuthenticationContext(config);
 
     return new Promise((resolve) => {
+      console.log('authentication.js -> Promise() -> START');
+      //Checks if the URL fragment contains access token, id token or error_description
       if (this.authenticationContext.isCallback(window.location.hash) || window.self !== window.top) {
+        console.log('window.location.hash');
+        console.log('------------------------');
+        console.log(window.location.hash);
+        console.log('window.self');
+        console.log('------------------------');
+        console.log(window.self);
+        console.log('window.top');
+        console.log('------------------------');
+        console.log(window.top);
+        console.log('------------------------');
+        console.log('authentication.js -> Promise() -> call this.authenticationContext.handleWindowCallback()');
         // redirect to the location specified in the url params.
+        /*
+           This method must be called for processing the response received from AAD. 
+           It extracts the hash, processes the token or error, saves it in the cache and calls the registered callbacks with the result.
+        */
         this.authenticationContext.handleWindowCallback();
       } else {
+        console.log('authentication.js -> Promise() -> try to pull user out of local storage');
         // try pull the user out of local storage
         let user = this.authenticationContext.getCachedUser();
 
         if (user) {
+          console.log('authentication.js -> Promise() -> cached user found');
+          console.log(user);
             this.acquireToken().then(() => { 
+              console.log('authentication.js -> Promise() -> cached user found -> token acquired -> resolve()');
                 resolve(); //successful authentication & authorization
-            }).catch(() => { 
+            }).catch((error) => {
+              console.log(error);
+              console.log('authentication.js -> Promise() -> cached user found -> unable to acquire token -> initiate force sign out process');
               this.signOut();
             }
             )
         } else {
           // no user at all - go sign in.
+          console.log('authentication.js -> cached user NOT found -> initiate sign in process ');
           this.signIn();
         }
       }
@@ -71,12 +97,17 @@ export default {
   getAccessToken() {
     return new Promise((resolve, reject) => {
     // getCachedToken will only return a valid, non-expired token.
+    console.log('getAccessToken() => checking if token is expired...');
     if (this.authenticationContext.getCachedToken(config.resourceApi)) {
+      console.log('getAccessToken() => token is still valid...return it to requester');
       resolve(this.authenticationContext.getCachedToken(config.resourceApi)); 
     } else {
+      console.log('getAccessToken() => token is expired... try acquiring a new one');
       this.acquireToken().then((token) => {
+        console.log('getAccessToken() => new token acquired...return it to requester');
         resolve(token);
       }).catch((error) => {
+        console.log('getAccessToken() => failed to acquire a new token');
         reject(error);
       });
     }

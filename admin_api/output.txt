@@ -1,0 +1,1 @@
+{"EnqueuedTimeUtc":"2019-03-14T19:52:37.0030000Z","Properties":{},"SystemProperties":{"connectionDeviceId":"a1_1","connectionAuthMethod":"{\"scope\":\"device\",\"type\":\"sas\",\"issuer\":\"iothub\",\"acceptingIpFilterRule\":null}","connectionDeviceGenerationId":"636876600196697140","enqueuedTime":"2019-03-14T19:52:37.0030000Z"},"Body":"eyAiRndVcGRhdGVFdmVudCI6IDAgfQ=="}
