@@ -533,18 +533,19 @@ def test_happy_path_scenario():
     request = { "name" : "TestScriptGroup_DeleteIfYouSeeMeModified"}
     response = test_endpoint('https://{}/v1/groups/{}'.format(WEBAPI_ENDPOINT, group_id), auth_token=AUTH_TOKEN, method='PUT', request_body=json.dumps(request))
     if response is None or response.status_code != 200:
-        logger.error('FAIL: Did not get good response from PUT endpoint')
+        logger.error('FAIL: Did not get good 200 response from PUT endpoint - got {} instead'.format(response.status_code))
         logger.debug(response.text)
     for k in [ 'group_id', 'name', 'desired_fw', 'firmware_id']:
         if k not in response.json():
-            logger.error('FAIL: Key {} not in group PUT response'.format(k))
+            logger.error('FAIL: Key {} not in groups PUT response'.format(k))
             logger.debug(response.text)
-    modified_name = response.json()['name']
-    if modified_name != 'TestScriptGroup_DeleteIfYouSeeMeModified':
-        logger.error('FAIL: could not successfully modify the namefor the new group we just created')
-        logger.debug(response.text)
-    else:
-        logger.info("SUCCESS: modified new firmware group and changed its name")
+    if 'name' in response.json():
+        modified_name = response.json()['name']
+        if modified_name != 'TestScriptGroup_DeleteIfYouSeeMeModified':
+            logger.error('FAIL: could not successfully modify the name for the new group we just created')
+            logger.debug(response.text)
+        else:
+            logger.info("SUCCESS: modified new firmware group and changed its name")
 
     # ASSIGN OUR TEST DEVICE BACK TO THE ORIGINAL GROUP
     logtest('Testing devices PUT endpoint - Assigning device back to original group')
@@ -569,6 +570,7 @@ def test_happy_path_scenario():
 def run_tests():
 
     # test all endpoints to make sure we get 401 from them all
+    '''
     run_401_tests()
 
     test_uploaduri()
@@ -578,6 +580,7 @@ def run_tests():
     test_groups_get()
     test_firmware_get()
     test_devices_get()
+    '''
 
     test_happy_path_scenario()
     
