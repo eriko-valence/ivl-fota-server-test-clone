@@ -29,7 +29,11 @@ module.exports = {
                 errorDetected = 1;
                 console.log('api field mapping failed for database column ' + column.metadata.colName);
             } else {
-                device[apiField] = column.value;
+                if (column.value === null) {
+                    device[apiField] = '';
+                } else {
+                    device[apiField] = column.value;
+                }
             }
         });
         //don't add the record if there was a api field mapping error
