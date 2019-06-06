@@ -92,5 +92,10 @@ module.exports = {
         token: sasToken,
         uri: blobService.getUrl(container, blobName, sasToken, true)
       }
+    },
+    isIntegerOnly(s) {
+        let regex = /^[0-9]+$/
+        let matched = regex.exec(s);
+        if (matched === null) { return false} else {return true}
     }
  }

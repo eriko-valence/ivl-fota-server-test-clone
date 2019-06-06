@@ -123,6 +123,19 @@ module.exports =  function (context, req) {
         let error = false;
         let name = _.get(req.body, 'name', null);
         let desiredfwid = _.get(req.body, 'desired_fw_id', null);
+
+        if (!(helper.isIntegerOnly(desiredfwid))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for parameter \'desired_fw_id\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
+
+
         if (name !== null && desiredfwid !== null) {
             let sqlQuery = 'fota_uspCreateGroup';
             request = new Request(sqlQuery, function(err) {
@@ -195,9 +208,9 @@ module.exports =  function (context, req) {
             connection.callProcedure(request);
         } else {
             context.res = {
-                status: 404,
+                status: 400,
                 body: {
-                    code: 404,
+                    code: 400,
                     error: 'Missing required request parameter(s)'
                 }
             };
@@ -210,6 +223,29 @@ module.exports =  function (context, req) {
         let groupid = _.get(req.params, 'groupid', '');
         let groupname = _.get(req.body, 'name', null);
         let desiredfwid = _.get(req.body, 'desired_fw_id', null);
+
+        if (!(helper.isIntegerOnly(groupid))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for parameter \'groupid\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
+
+        if (!(helper.isIntegerOnly(desiredfwid))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for parameter \'desired_fw_id\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
+
         if (groupid !== null && groupname !== null) {
             let sqlQuery = 'fota_uspUpdateGroup';
             request = new Request(sqlQuery, function(err) {
@@ -288,6 +324,17 @@ module.exports =  function (context, req) {
     function deleteGroup(connection) {
         let error = false;
         let groupid = _.get(req.params, 'groupid', null);
+
+        if (!(helper.isIntegerOnly(groupid))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for parameter \'groupid\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
 
         if (groupid !== null) {
             let sqlQuery = 'fota_uspDeleteGroup';

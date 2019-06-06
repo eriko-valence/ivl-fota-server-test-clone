@@ -25,9 +25,19 @@ module.exports = function (context, req) {
 
     function createAzureStorageBlobSas(connection) {
         let name = _.get(req.query, 'name', null); //pull deviceid from route parameter
-        if (name !== null) {
-            name = `${process.env.AzureBlobNamePrefix}${name}`;
-        }
+        if (name === null) {
+            
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for parameter \'name\'. This parameter is required.'
+                }
+            };
+            context.done();
+
+        } else {
+        name = `${process.env.AzureBlobNamePrefix}${name}`;
         // The following values can be used for permissions: 
         // "a" (Add), "r" (Read), "w" (Write), "d" (Delete), "l" (List)
         // Concatenate multiple permissions, such as "rwa" = Read, Write, Add
@@ -39,6 +49,8 @@ module.exports = function (context, req) {
             status: 200,
             body: bodySasUri
         };
-        context.done();   
+        context.done(); 
+        }
+  
     }
 };

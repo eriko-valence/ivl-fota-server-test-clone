@@ -199,6 +199,17 @@ module.exports =  function (context, req) {
     function deleteFirmware(connection) {
         let firmware_id = _.get(req.params, 'firmware_version_id', null);
 
+        if (!(helper.isIntegerOnly(firmware_id))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for parameter \'firmware_version_id\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
+
         if (firmware_id !== null) {
             let sqlQuery = 'fota_uspDeleteFirmware';
             request = new Request(sqlQuery, function(err) {

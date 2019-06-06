@@ -119,6 +119,30 @@ module.exports =  function (context, req) {
         let error = false;
         let deviceid = _.get(req.body, 'deviceid', null);
         let groupid = _.get(req.body, 'group_id', null);
+
+        if (!(helper.isIntegerOnly(deviceid))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for deviceid \'desired_fw_id\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
+
+        if (!(helper.isIntegerOnly(groupid))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for deviceid \'group_id\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
+
+
         if (deviceid !== null) {
             let sqlQuery = 'uspCreateDevice';
             request = new Request(sqlQuery, function(err) {
@@ -182,6 +206,29 @@ module.exports =  function (context, req) {
         let error = false;
         let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
         let groupid = _.get(req.body, 'group_id', null);
+
+        if (!(helper.isIntegerOnly(deviceid))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for deviceid \'deviceid\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
+
+        if (!(helper.isIntegerOnly(groupid))) {
+            context.res = {
+                status: 400,             
+                body: {
+                    code: 400,
+                    error: 'Validation failed for deviceid \'group_id\'. Must be a number.'
+                }
+            };
+            context.done();
+        }
+
         if (deviceid !== null && groupid !== null) {
             let sqlQuery = 'fota_uspUpdateDevice';
             request = new Request(sqlQuery, function(err) {
