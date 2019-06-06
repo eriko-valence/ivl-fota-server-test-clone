@@ -12,7 +12,7 @@
 ## Compile and minify application code for production
   - Open a command line prompt
   - Navigate to the root of your application code
-    - Example: iv_fota_server\management_web_app_client_side
+    - Example: iv_fota_server\admin_web_ui
   - Run the following command:
     ```
     npm run build
@@ -22,14 +22,14 @@
 ### Option #1: Visual Studio Code
 - Install Azure Storage extension (if not already installed)
 - Open your application code in VS Code
-  - Example: iv_fota_server\management_web_app_client_side
+  - Example: iv_fota_server\admin_web_ui
 - Right-click on your dist directory and select Deploy to Static Website....
-  - Example: iv_fota_server\management_web_app_client_side\dist
+  - Example: iv_fota_server\admin_web_ui\dist
 ### Option #2: Azure CLI
 - Install the Azure CLI
 - Open a command line prompt
 - Navigate to the dist directory of your application code
-  - Example: iv_fota_server\management_web_app_client_side\dist
+  - Example: iv_fota_server\admin_web_ui\dist
 - Upload the code. For example:  
   ```
   blob upload-batch --account-name ivladmindevelopment --account-key qjkObAyFda2d1+NWbgQdeFrxJeHALxucU3oBvg3rihq== --destination '$web' --source ./
