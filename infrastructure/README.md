@@ -30,7 +30,7 @@ terraform init
 terraform apply -var-file="terraform.tfvars"
 ```
 
-## Conigure deployed Azure infrastructure
+## Manually Configure Azure infrastructure
 - Set values for the following secrets (Azure Key Vault):
 ```
 'AzureBlobStorageConnectionString'
