@@ -92,6 +92,8 @@ terraform apply -var-file="terraform.tfvars"
 	- Set 'User assignment required?' to 'Enabled'
 	- Select 'Users and groups'
 	- Add authorized admin web ui users here
+- Setup cname record for mf2fota-dev.2to8.cc
+- Configure SSL certificate
 		
 ## Destroy Azure infrastructure using Terraform
 ```
