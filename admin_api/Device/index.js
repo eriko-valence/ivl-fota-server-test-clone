@@ -88,8 +88,7 @@ module.exports =  function (context, req) {
         });
         //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
-            if (devices.length > 0) {
-                _.each(devices, item => item.deviceid = parseInt(item.deviceid, 10));
+            if (devices.length > 0) {                
                 let sort = helper.processSortQueryString(sortBy);
                 if (sort.length === 1 ) {
                     let sortColumn = _.get(sort[0], 'column', '');
@@ -215,7 +214,7 @@ module.exports =  function (context, req) {
                 status: 400,             
                 body: {
                     code: 400,
-                    error: 'Validation failed for deviceid \'deviceid\'. Must be a number.'
+                    error: 'Validation failed for request parameter \'deviceid\'. Must be a number.'
                 }
             };
             context.done();
@@ -226,7 +225,7 @@ module.exports =  function (context, req) {
                 status: 400,             
                 body: {
                     code: 400,
-                    error: 'Validation failed for deviceid \'group_id\'. Must be a number.'
+                    error: 'Validation failed for request parameter \'group_id\'. Must be a number.'
                 }
             };
             context.done();
@@ -278,6 +277,14 @@ module.exports =  function (context, req) {
                         body: {
                             code: 404,
                             error: 'The device was not found.'
+                        }
+                    };
+                } else if (parameterName === 'result' && value === 5) { //5 = group does not exist
+                    context.res = {
+                        status: 404,
+                        body: {
+                            code: 404,
+                            error: 'Failed to update the device: group not found.'
                         }
                     };
                 } else if (!error) {

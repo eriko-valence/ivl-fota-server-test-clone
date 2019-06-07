@@ -296,6 +296,14 @@ module.exports =  function (context, req) {
                             error: 'The group was not found.'
                         }
                     };
+                } else if (parameterName === 'result' && value === 5) { //2 = firmware does not exist
+                    context.res = {
+                        status: 404,
+                        body: {
+                            code: 404,
+                            error: 'Failed to update the group: firmware not found.'
+                        }
+                    };
                 } else if (!error) {
                     context.res = {
                         status: 500,
