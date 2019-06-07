@@ -8,6 +8,8 @@ BEGIN
 			BEGIN
 				IF @desiredfwid IS NOT NULL
 				BEGIN
+					IF EXISTS(SELECT 1 FROM vwFirmware WHERE FirmwareId = @desiredfwid)
+					BEGIN
 					UPDATE DeviceGroup
 					Set 
 					Name = @name,
@@ -19,6 +21,9 @@ BEGIN
 					SET @result = 1 --successful update
 					ELSE
 					SET @result = 4 --unsuccessful update 
+					END
+					ELSE
+					  SET @result = 5 --firmware does not exist 
 				END
 				ELSE
 				BEGIN
