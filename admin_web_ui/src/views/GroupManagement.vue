@@ -127,9 +127,9 @@ export
       handleOk(evt) {
         evt.preventDefault()
         if (!this.inputGroupName) {
-            alert('Please enter group 1')
+            alert('Please enter a group name')
         } else if (!this.selectedFirmware) {
-            alert('Please enter group 2')
+            alert('Please select a firmware version')
         } else {
             this.handleSubmit()
         }
