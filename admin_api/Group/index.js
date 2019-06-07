@@ -247,18 +247,19 @@ module.exports =  function (context, req) {
             context.done();
         }
 
-        if (!(helper.isIntegerOnly(desiredfwid))) {
-            context.res = {
-                status: 400,             
-                body: {
-                    code: 400,
-                    error: 'Validation failed for parameter \'desired_fw_id\'. Must be a number.'
-                }
-            };
-            context.done();
-        }
-
         if (desiredfwid !== null) {
+
+            if (!(helper.isIntegerOnly(desiredfwid))) {
+                context.res = {
+                    status: 400,             
+                    body: {
+                        code: 400,
+                        error: 'Validation failed for parameter \'desired_fw_id\'. Must be a number.'
+                    }
+                };
+                context.done();
+            }
+
             if (desiredfwid.length > 500 ) {
                 context.res = {
                     status: 400,             
