@@ -158,10 +158,12 @@ module.exports =  function (context, req) {
            let apiFieldMappings = apihelper.getFirmwareApiFieldMappings();
            //process row from execution of the SQL statement
            request.on('row', function(columns) {
-               let fw = helper.processRow(columns,apiFieldMappings);
-               if (fw.length === 1) {
-                   firmware.push(fw[0]);
-               }
+                let fw = helper.processRow(columns,apiFieldMappings);
+                if (fw.length === 1) {
+                    let bloburi = helper.getAzureBlobUri(fw[0]['blob_container'], fw[0]['blob_name']);
+                    fw[0].uri = bloburi.toString().replace("https", "http");
+                    firmware.push(fw[0]);
+                }
            });
 
 
