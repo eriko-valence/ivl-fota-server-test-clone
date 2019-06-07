@@ -11,17 +11,6 @@
     </template>
 
     </b-table>
-    <b-button v-b-modal.modal-prevent>Create New Device</b-button>
-    <b-modal id="modal-prevent" ref="modal" title="Upload File" @ok="handleOk" @shown="handleLoadModal">
-      <form @submit.stop.prevent="handleSubmit">
-        <b-form-input v-model="inputDeviceId" placeholder="Enter device id"></b-form-input>
-        <b-form-select v-model="selectedGroup" :options="ddGroups" class="mb-3">
-        <template slot="first">
-          <option :value="null" disabled>-- Please select a group --</option>
-        </template>
-      </b-form-select>
-      </form>
-    </b-modal>
   </div>
 </template>
 
@@ -54,31 +43,6 @@ export
       }
     },
     methods: {
-      handleLoadModal() {
-        this.inputDeviceId = '';
-        this.selectedGroup = null;
-      },
-      handleOk(evt) {
-        evt.preventDefault()
-        if (!this.inputDeviceId) {
-            alert('Please enter a device id')
-        } else if (!this.selectedGroup) {
-            alert('Please select a group')
-        } else {
-            this.handleSubmit()
-        }
-      },
-      handleSubmit() {
-        this.deviceUploadBodyMFOX = {
-          deviceid: this.inputDeviceId,
-          group_id : this.selectedGroup
-          };
-        this.handleLoadModal()
-        this.$nextTick(() => {
-          this.$refs.modal.hide()
-        })
-        this.uploadToMFOX();
-      },
       uploadToMFOX() {
         authentication.getAccessToken()
           .then( (token) => {
