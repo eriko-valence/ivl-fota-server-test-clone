@@ -236,7 +236,7 @@ module.exports =  function (context, req) {
             request.on('returnValue', function (parameterName, value, metadata) { 
                 if (parameterName === 'result' && value === 1) {
                     context.res = {
-                        status: 200
+                        status: 204
                     };
                 } 
                 else if (parameterName === 'result' && value === 2) {
