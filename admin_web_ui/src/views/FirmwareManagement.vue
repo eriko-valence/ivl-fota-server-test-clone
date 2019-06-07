@@ -40,6 +40,7 @@
 
 <script>
 import authentication from '../authentication'
+import shared from '../shared'
 export
   default {
     data() {
@@ -73,9 +74,15 @@ export
       handleOk(evt) {
         evt.preventDefault()
         if (!this.firmwareVersion) {
-            alert('Please enter the firmware version')
+          alert('Please enter the firmware version')
+        } else if (!(shared.isVersionValidFormat(this.firmwareVersion))) {
+          alert('Please enter a valid firmware version')
+        } else if (!this.firmwareSignature) {
+          alert('Please enter the firmware signature')
+        } else if (!this.firmwareFileContent) {
+          alert('Please select the firmware binary to upload')
         } else {
-            this.handleSubmit()
+          this.handleSubmit()
         }
       },
       confirmDeleteFirmwareError() {
