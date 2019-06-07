@@ -257,6 +257,18 @@ module.exports =  function (context, req) {
         }
 
         if (deviceid !== null && groupid !== null) {
+
+            if (deviceid.length > 500 || groupid.length > 500) {
+                context.res = {
+                    status: 400,             
+                    body: {
+                        code: 400,
+                        error: 'String value of greater than 500 characters are allowed.'
+                    }
+                };
+                context.done();
+            }
+
             let sqlQuery = 'fota_uspUpdateDevice';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 

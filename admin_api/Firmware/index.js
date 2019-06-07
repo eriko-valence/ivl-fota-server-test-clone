@@ -130,7 +130,20 @@ module.exports =  function (context, req) {
         let image = _.get(req.body, 'image', null);
         let signature = _.get(req.body, 'signature', null);
         let md5 = _.get(req.body, 'md5', null);
+
         if (version !== null && image !== null && signature !== null && md5 !== null) {
+
+            if (version.length > 500 || image.length > 500 || signature.length > 500 || md5.length > 500) {
+                context.res = {
+                    status: 400,             
+                    body: {
+                        code: 400,
+                        error: 'String value of greater than 500 characters not allowed.'
+                    }
+                };
+                context.done();
+            }
+
             let sqlQuery = 'fota_uspCreateFirmware';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 

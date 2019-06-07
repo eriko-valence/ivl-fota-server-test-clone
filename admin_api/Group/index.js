@@ -137,6 +137,18 @@ module.exports =  function (context, req) {
 
 
         if (name !== null && desiredfwid !== null) {
+
+            if (name.length > 500 || desiredfwid.length > 500) {
+                context.res = {
+                    status: 400,             
+                    body: {
+                        code: 400,
+                        error: 'String value of greater than 500 characters not allowed.'
+                    }
+                };
+                context.done();
+            }
+
             let sqlQuery = 'fota_uspCreateGroup';
             request = new Request(sqlQuery, function(err) {
                 if (err) { 
@@ -246,7 +258,32 @@ module.exports =  function (context, req) {
             context.done();
         }
 
+        if (desiredfwid !== null) {
+            if (desiredfwid.length > 500 ) {
+                context.res = {
+                    status: 400,             
+                    body: {
+                        code: 400,
+                        error: 'String value of greater than 500 characters not allowed.'
+                    }
+                };
+                context.done();
+            }  
+        }
+
         if (groupid !== null && groupname !== null) {
+
+            if (groupid.length > 500 || groupname.length > 500) {
+                context.res = {
+                    status: 400,             
+                    body: {
+                        code: 400,
+                        error: 'String value of greater than 500 characters not allowed.'
+                    }
+                };
+                context.done();
+            }
+
             let sqlQuery = 'fota_uspUpdateGroup';
             request = new Request(sqlQuery, function(err) {
                 context.log(err);
