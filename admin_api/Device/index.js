@@ -62,6 +62,34 @@ module.exports =  function (context, req) {
    function getDevices(connection) {
         let sqlQuery = 'fota_uspGetAllDevices';
         let error = false;
+        let devices = [];
+        let apiFieldMappings = apihelper.getDeviceApiFieldMappings();
+        let sort = helper.processSortQueryString(sortBy);
+        if (sort.length === 1 ) {
+            let sortCol = _.get(sort[0], 'column', null);
+            let sortOrder = _.get(sort[0], 'order', null);
+            var validSortCols = _.values(apiFieldMappings);
+            if (!_.includes(validSortCols, sortCol)) {
+                context.res = {
+                    status: 400,             
+                    body: {
+                        code: 400,
+                        error: `Sort column '${sortCol}' is not valid.`
+                    }
+                };
+                context.done();
+            } else if (!_.includes(['asc', 'desc'], sortOrder)) {
+                context.res = {
+                    status: 400,             
+                    body: {
+                        code: 400,
+                        error: `Sort order '${sortOrder}' is not valid. Use either 'asc' or 'desc'.`
+                    }
+                };
+                context.done();
+            }
+        }
+        
         request = new Request(sqlQuery, function(err) {
             if (err) { 
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
@@ -77,8 +105,6 @@ module.exports =  function (context, req) {
                 context.done();
             }
         });
-        let devices = [];
-        let apiFieldMappings = apihelper.getDeviceApiFieldMappings();
         //process row from execution of the SQL statement
         request.on('row', function(columns) {
             let device = helper.processRow(columns,apiFieldMappings);
@@ -88,8 +114,7 @@ module.exports =  function (context, req) {
         });
         //this is the final event emitted by an azure sql query request
         request.on('requestCompleted', function () {
-            if (devices.length > 0) {                
-                let sort = helper.processSortQueryString(sortBy);
+            if (devices.length > 0) {
                 if (sort.length === 1 ) {
                     let sortColumn = _.get(sort[0], 'column', '');
                     let sortOrder = _.get(sort[0], 'order', '');
