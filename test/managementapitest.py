@@ -13,7 +13,7 @@ WEBAPI_ENDPOINT='ivlapiadmin-dev.azurewebsites.net'
 
 # You need to log into the WebUI, and inspect the headers when it hits the API.  
 # Then extract out the token it uses in the Authorization header and paste it below
-AUTH_TOKEN='eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkN0ZlFDOExlLThOc0M3b0MyelFrWnBjcmZPYyIsImtpZCI6IkN0ZlFDOExlLThOc0M3b0MyelFrWnBjcmZPYyJ9.eyJhdWQiOiJodHRwczovL2l2bGFwaWFkbWluLWRldi5henVyZXdlYnNpdGVzLm5ldCIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzI1NTM4NmMwLTk3NDEtNDcyNS1hNDhlLWIyYjE1Njc3MDZkOS8iLCJpYXQiOjE1NTk4NTMxNzgsIm5iZiI6MTU1OTg1MzE3OCwiZXhwIjoxNTU5ODU3MDc4LCJhY3IiOiIxIiwiYWlvIjoiNDJaZ1lIQVQ3R2pLNEZsdjlGalA2a1RWVTllSHhrRUI0VS9UbnB3UlNqWDJ1TXU1dVE4QSIsImFtciI6WyJwd2QiXSwiYXBwaWQiOiIxMDMwYjE5ZC03YTZjLTQxNDYtODQzNi1lOTc3MjAwZmI4NDIiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IkNhcmxpc2xlIiwiZ2l2ZW5fbmFtZSI6Ik1hdHRoZXciLCJpcGFkZHIiOiI5Ni40Ni4xOS4yNDEiLCJuYW1lIjoiTWF0dGhldyBDYXJsaXNsZSIsIm9pZCI6IjFmZDhiM2NlLTlkMmItNDgxNS1iNmIzLTlmYzkzYWYwOTA5OCIsInNjcCI6InVzZXJfaW1wZXJzb25hdGlvbiIsInN1YiI6IjZxSlVYMlBneFZLbWFtakRGdU1vX2luSGNyNUYzNm9waV9VYWZYVEZac1kiLCJ0aWQiOiIyNTUzODZjMC05NzQxLTQ3MjUtYTQ4ZS1iMmIxNTY3NzA2ZDkiLCJ1bmlxdWVfbmFtZSI6Im1hdHRoZXdjQHZhbGVuY2VsZXZlbC5jb20iLCJ1cG4iOiJtYXR0aGV3Y0B2YWxlbmNlbGV2ZWwuY29tIiwidXRpIjoiSkpsYklMeVFQVVMtelVwOTE1Q1RBQSIsInZlciI6IjEuMCJ9.CR_0cSXYhoaQPdhs3zhl4nr8NgNCJYQcCgRwPWAP1gBsyDP1EjPK_B_x0yuQuYCK-F6oM9-c6C26-C61lkJkT1FbUAoLJhvgFbuqKr-ShGuGtfVzk6hAC0ueFIaZ-cbegtP3fe1FnLtNPBBQJgM7tcHuofdWLPe2P3_3cRq1BV1QNn31vE_JpFBAn35Ope1ddPYsSqdaAkMmXk2AAI9LX-9-DKgm7j9dX_8ap2cP6MfyXPTDdoJjGV4zPKnzi6CTvtmF4Awy60LmKXHyvU8y8ms87l7_Rz7BPCgx9TsxNuoMhnReyNlHfb3iwRCcEK3TKJXfCNTvUWdWOX7hotULCQ'
+AUTH_TOKEN='eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkN0ZlFDOExlLThOc0M3b0MyelFrWnBjcmZPYyIsImtpZCI6IkN0ZlFDOExlLThOc0M3b0MyelFrWnBjcmZPYyJ9.eyJhdWQiOiJodHRwczovL2l2bGFwaWFkbWluLWRldi5henVyZXdlYnNpdGVzLm5ldCIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzI1NTM4NmMwLTk3NDEtNDcyNS1hNDhlLWIyYjE1Njc3MDZkOS8iLCJpYXQiOjE1NTk5MzAwMzksIm5iZiI6MTU1OTkzMDAzOSwiZXhwIjoxNTU5OTMzOTM5LCJhY3IiOiIxIiwiYWlvIjoiNDJaZ1lCRGlsdHcvVmFaTDJGMjdNL0pxMmF0S1EzT2x0bnhuanMvL2ZUTEVwL0FrSEFZQSIsImFtciI6WyJwd2QiXSwiYXBwaWQiOiIxMDMwYjE5ZC03YTZjLTQxNDYtODQzNi1lOTc3MjAwZmI4NDIiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IkNhcmxpc2xlIiwiZ2l2ZW5fbmFtZSI6Ik1hdHRoZXciLCJpcGFkZHIiOiI5Ni40Ni4xOS4yNDEiLCJuYW1lIjoiTWF0dGhldyBDYXJsaXNsZSIsIm9pZCI6IjFmZDhiM2NlLTlkMmItNDgxNS1iNmIzLTlmYzkzYWYwOTA5OCIsInNjcCI6InVzZXJfaW1wZXJzb25hdGlvbiIsInN1YiI6IjZxSlVYMlBneFZLbWFtakRGdU1vX2luSGNyNUYzNm9waV9VYWZYVEZac1kiLCJ0aWQiOiIyNTUzODZjMC05NzQxLTQ3MjUtYTQ4ZS1iMmIxNTY3NzA2ZDkiLCJ1bmlxdWVfbmFtZSI6Im1hdHRoZXdjQHZhbGVuY2VsZXZlbC5jb20iLCJ1cG4iOiJtYXR0aGV3Y0B2YWxlbmNlbGV2ZWwuY29tIiwidXRpIjoiRzRfTS15dmFtVTJYN3RQUG93VVFBUSIsInZlciI6IjEuMCJ9.FjBONSo5Soz_vUL7mx-qH4vfn_WG3uyuDFrbpWm6QQAXkxCNjhuI5-PoQGbKZMIRY4yt_D8G5hfPfEDyqNJmz1drM-3DgB_TX0SJk9j-Ao9XexMz18JMz8ifqz6E6Wy8_C4x4zb1785U6bBIR96-abYwK0sguvuQWidfGR-e9geqAzz0NBBSgoRJDkUjKUElXMku9M4XU9RAm-GE9Av6aoMZZhTcUankxN6hWy8y_W_RB6aDl4K_0l6Wf5xXyZgsAr2_T8JCof2cC1w4FGBBI1HEP3N4I7Y8N-xLVJBh8TzoHK5oORD9hRHZMIPFAaQePZZfB-yzpdkv_qKtGCIjbQ'
 
 # This is the fridgeID of the TestScript fridge (not a real one of course) that we expect to have control over
 FRIDGE_ID="999"
@@ -215,7 +215,7 @@ def test_devices_get():
             logger.error('FAIL: did not get any devices from the GET')
             success = False
         else:
-            for k in [ 'deviceid', 'group', 'group_id', 'desired_fw']:
+            for k in [ 'deviceid', 'MFID', 'SN', 'ShortSN', 'group', 'group_id', 'desired_fw']:
                 if k not in d[0]:
                     logger.error('FAIL: Key {} not in devices GET response'.format(k))
                     success = False
@@ -570,7 +570,6 @@ def test_happy_path_scenario():
 def run_tests():
 
     # test all endpoints to make sure we get 401 from them all
-    '''
     run_401_tests()
 
     test_uploaduri()
@@ -580,7 +579,6 @@ def run_tests():
     test_groups_get()
     test_firmware_get()
     test_devices_get()
-    '''
 
     test_happy_path_scenario()
     
