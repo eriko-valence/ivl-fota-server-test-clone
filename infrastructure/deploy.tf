@@ -1,6 +1,3 @@
-provider "azurerm" {
-}
-
 variable "env_prefix_lower" {
   default = "dev"
 }
@@ -41,6 +38,57 @@ variable "firmware_blob_prefix" {
   default = ""
 }
 
+data "azurerm_subscription" "current" {}
+
+output "current_subscription_display_name" {
+  value = "${data.azurerm_subscription.current.display_name}"
+}
+
+output "current_function_app_admin_api_zip" {
+  value = "${data.archive_file.admin_api_zip.output_path}"
+}
+
+output "current_function_app_device_api_zip" {
+  value = "${data.archive_file.device_api_zip.output_path}"
+}
+
+data "archive_file" "admin_api_zip" {
+  type = "zip"
+  source_dir = "..\\admin_api"
+  output_path = ".\\functionapp-releases\\functionapp-admin-api.zip"
+  excludes    = [".vscode"]
+}
+
+data "archive_file" "device_api_zip" {
+  type = "zip"
+  source_dir = "..\\device_api"
+  output_path = ".\\functionapp-releases\\functionapp-device-api.zip"
+  excludes    = [".vscode"]
+}
+
+provider "azurerm" {
+}
+
+resource "azurerm_storage_blob" "sb-functionapp-admin-api" {
+  name = "functionapp-admin-api.zip"
+  resource_group_name   = "${azurerm_resource_group.rg-infrastructure.name}"
+  storage_account_name  = "${azurerm_storage_account.sa-infrastructure.name}"
+  storage_container_name = "${azurerm_storage_container.sc-function-releases.name}"
+  type   = "block"
+  source = "${data.archive_file.admin_api_zip.output_path}"
+  depends_on = ["data.archive_file.admin_api_zip"]
+}
+
+resource "azurerm_storage_blob" "sb-functionapp-device-api" {
+  name = "functionapp-device-api.zip"
+  resource_group_name   = "${azurerm_resource_group.rg-infrastructure.name}"
+  storage_account_name  = "${azurerm_storage_account.sa-infrastructure.name}"
+  storage_container_name = "${azurerm_storage_container.sc-function-releases.name}"
+  type   = "block"
+  source = "${data.archive_file.device_api_zip.output_path}"
+  depends_on = [ "data.archive_file.device_api_zip" ]
+}
+
 resource "azurerm_resource_group" "rg-infrastructure" {
   name     = "rg-${var.base_name}-${var.env_prefix_lower}"
   location = "${var.location}"
@@ -73,23 +121,7 @@ resource "azurerm_storage_container" "sc-function-releases" {
   container_access_type = "private"
 }
 
-resource "azurerm_storage_blob" "sb-functionapp-admin-api" {
-  name = "functionapp-admin-api.zip"
-  resource_group_name   = "${azurerm_resource_group.rg-infrastructure.name}"
-  storage_account_name  = "${azurerm_storage_account.sa-infrastructure.name}"
-  storage_container_name = "${azurerm_storage_container.sc-function-releases.name}"
-  type   = "block"
-  source = ".\\functionapp-releases\\functionapp-admin-api.zip"
-}
 
-resource "azurerm_storage_blob" "sb-functionapp-device-api" {
-  name = "functionapp-device-api.zip"
-  resource_group_name   = "${azurerm_resource_group.rg-infrastructure.name}"
-  storage_account_name  = "${azurerm_storage_account.sa-infrastructure.name}"
-  storage_container_name = "${azurerm_storage_container.sc-function-releases.name}"
-  type   = "block"
-  source = ".\\functionapp-releases\\functionapp-device-api.zip"
-}
 
 data "azurerm_storage_account_sas" "sas-infrastructure" {
   connection_string = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
@@ -134,7 +166,7 @@ resource "azurerm_function_app" "fa-device-api" {
   app_service_plan_id       = "${azurerm_app_service_plan.sp-infrastructure.id}"
   storage_connection_string = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
   app_settings {
-    HASH            = "${base64sha256(file(".\\functionapp-releases\\functionapp-device-api.zip"))}"
+    HASH = "${data.archive_file.device_api_zip.output_base64sha256}"
     WEBSITE_RUN_FROM_PACKAGE = "https://${azurerm_storage_account.sa-infrastructure.name}.blob.core.windows.net/${azurerm_storage_container.sc-function-releases.name}/${azurerm_storage_blob.sb-functionapp-device-api.name}${data.azurerm_storage_account_sas.sas-infrastructure.sas}"
 	AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
 	"APPINSIGHTS_INSTRUMENTATIONKEY" = "${azurerm_application_insights.ai-infrastructure.instrumentation_key}"
@@ -157,7 +189,7 @@ resource "azurerm_function_app" "fa-admin-api" {
   app_service_plan_id       = "${azurerm_app_service_plan.sp-infrastructure.id}"
   storage_connection_string = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
   app_settings {
-    HASH            = "${base64sha256(file(".\\functionapp-releases\\functionapp-admin-api.zip"))}"
+    HASH = "${data.archive_file.admin_api_zip.output_base64sha256}"
     WEBSITE_RUN_FROM_PACKAGE = "https://${azurerm_storage_account.sa-infrastructure.name}.blob.core.windows.net/${azurerm_storage_container.sc-function-releases.name}/${azurerm_storage_blob.sb-functionapp-admin-api.name}${data.azurerm_storage_account_sas.sas-infrastructure.sas}"
 	AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
 	"APPINSIGHTS_INSTRUMENTATIONKEY" = "${azurerm_application_insights.ai-infrastructure.instrumentation_key}"
