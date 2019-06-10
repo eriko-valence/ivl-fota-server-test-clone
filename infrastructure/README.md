@@ -1,24 +1,7 @@
 # Deploy the website to Azure
 
-## Create source code package
-- Option #1 (Windows): PowerShell
-```
-infrastructure> .\createZipPackage.ps1 -app_source_code_dir ../device_api -zip_file_name .\functionapp-releases\functionapp-device-api.zip
-infrastructure> .\createZipPackage.ps1 -app_source_code_dir ../admin_api -zip_file_name .\functionapp-releases\functionapp-admin-api.zip
-```
-
 ## Setup Terraform environment
-- Option #1 (Windows): Set Environment Variables
-```
-setupTerraformEnv.ps1
-------------------------------------------------------------
-Set-Item -Path Env:ARM_SUBSCRIPTION_ID -Value ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
-Set-Item -Path Env:ARM_CLIENT_ID -Value ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
-Set-Item -Path Env:ARM_CLIENT_SECRET -Value ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
-Set-Item -Path Env:ARM_TENANT_ID -Value ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
-```
-
-- Option #2: Login using  the azure command line tool
+- Login using the azure command line tool
 ```
 az login
 az account list --output table
