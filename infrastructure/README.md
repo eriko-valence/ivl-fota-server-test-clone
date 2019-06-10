@@ -1,6 +1,10 @@
 # Deploy the website to Azure
 
 ## Setup Terraform environment
+- Install Azure CLI
+- Install Terraform
+
+## Setup Terraform environment
 - Login using the azure command line tool
 ```
 az login
