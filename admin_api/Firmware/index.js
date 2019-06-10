@@ -189,6 +189,14 @@ module.exports =  function (context, req) {
                             body: firmware[0]
                         };
                     }
+                } else if (parameterName === 'result' && value === 6) { //6 = firmware version already exists
+                    context.res = {
+                        status: 400,
+                        body: {
+                            code: 400,
+                            error: 'Firmware version already exists.'
+                        }
+                    };
                 } else if (!error) {
                     context.res = {
                         status: 500,
