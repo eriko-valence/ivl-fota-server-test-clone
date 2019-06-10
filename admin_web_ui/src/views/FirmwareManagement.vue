@@ -22,11 +22,14 @@
       <b-button @click="cancelDeleteFirmware()" pill>Cancel</b-button>
     </b-modal>
     <b-button v-b-modal.modal-prevent>Upload New Firmware</b-button>
-    <b-modal ref="modal-delete-error" hide-footer>
+    <b-modal ref="modal-delete-error" :header-bg-variant="headerBgVariant" :header-text-variant="headerTextVariant" hide-footer>
+      <template slot="modal-title">
+        Error
+      </template>
       <div class="d-block text-center">
         <h6>{{this.deleteError}}</h6>
       </div>
-      <b-button @click="confirmDeleteFirmwareError()" pill>OK</b-button>
+      <b-button class="mt-3" variant="outline-danger" block @click="confirmDeleteFirmwareError()">OK</b-button>
     </b-modal>
     <b-modal id="modal-prevent" ref="modal" title="Upload File" @ok="handleOk" @shown="handleLoadModal">
       <form @submit.stop.prevent="handleSubmit">
@@ -52,6 +55,9 @@ export
         firmware: [],
         firmwareUploadBodyMFOX: {},
         items: [],
+        variants: ['primary', 'secondary', 'success', 'warning', 'danger', 'info', 'light', 'dark'],
+        headerBgVariant: 'danger',
+        headerTextVariant: 'light',
         fields: [
           { key: 'version', label: 'Version', sortable: true, sortDirection: 'desc' },
           { key: 'uri', label: 'URI', sortable: true, class: 'text-center' },
@@ -150,8 +156,10 @@ export
             this.axios.post(apiEndpoint, this.firmwareUploadBodyMFOX, {headers: {'authorization': accessToken}})
               .then( () => {
                 this.getAllFirmwareFromMFOX();
-              }).catch(function (error) {
-                console.log(`error: ${error}`); // eslint-disable-line
+              }).catch( (error) => {
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
+                this.$refs['modal-delete-error'].show();
             });
         }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
@@ -173,7 +181,9 @@ export
                 if (error.toString().includes("404")) {
                   this.items = [];
                 }
-                console.log(`error: ${error}`); // eslint-disable-line
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
+                this.$refs['modal-delete-error'].show();
             });
         }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
@@ -191,8 +201,9 @@ export
             .then( () => {
               this.getAllFirmwareFromMFOX();
             }).catch( (error) => {
-              this.deleteError = error.response.data.error;
-              this.$refs['modal-delete-error'].show();
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
+                this.$refs['modal-delete-error'].show();
             });
         }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line

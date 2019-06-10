@@ -9,8 +9,17 @@
     <template slot="group" scope="row">
       <b-form-select @change="updateDeviceInMFOX(row.item)" v-model="row.item.group_id" :options="ddGroups" class="mb-3"></b-form-select>
     </template>
-
     </b-table>
+
+    <b-modal ref="modal-error" :header-bg-variant="headerBgVariant" :header-text-variant="headerTextVariant" hide-footer>
+      <template slot="modal-title">
+        Error
+      </template>
+      <div class="d-block text-center">
+        <h6>{{this.deleteError}}</h6>
+      </div>
+      <b-button class="mt-3" variant="outline-danger" block @click="confirmFirmwareError()">OK</b-button>
+    </b-modal>
   </div>
 </template>
 
@@ -30,6 +39,10 @@ export
         selectedGroup: null,
         editGroup: [],
         ddGroups: [],
+        deleteError: '',
+        variants: ['primary', 'secondary', 'success', 'warning', 'danger', 'info', 'light', 'dark'],
+        headerBgVariant: 'danger',
+        headerTextVariant: 'light',
         fields: [
           { key: 'deviceid', label: 'Fridge ID', sortable: true, sortDirection: 'desc' },
           { key: 'ShortSN', label: 'Short SN', sortable: true, sortDirection: 'desc' },
@@ -53,7 +66,9 @@ export
               console.log(`response: ${response}`); // eslint-disable-line
               this.getAllDevices();
             }).catch( (error) => {
-              console.log(`error: ${error}`); // eslint-disable-line
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
+                this.$refs['modal-error'].show();
             });
         }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
@@ -75,6 +90,9 @@ export
                   this.allDevices = [];
                 }
                 this.toggleLoading(false);
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
+                this.$refs['modal-error'].show();
             });
         }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
@@ -118,12 +136,18 @@ export
               console.log(`response: ${response}`); // eslint-disable-line
               this.getAllDevices();
             }).catch( (error) => {
-              console.log(`error: ${error}`); // eslint-disable-line
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
+                this.$refs['modal-error'].show();
             });
         }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
             authentication.signOut()
         });
+      },
+      confirmFirmwareError() {
+        this.$refs['modal-error'].hide();
+        this.deleteError = '';
       }
     },
     created:

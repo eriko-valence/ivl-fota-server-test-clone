@@ -13,6 +13,7 @@
         <b-button @click="editGroupModal(row.item)" pill>Edit</b-button>
       </template>
     </b-table>
+
     <b-button v-b-modal.modal-prevent>Create New Group</b-button>
   
     <b-modal ref="modal-confirm-delete" hide-footer>
@@ -23,11 +24,14 @@
       <b-button @click="cancelDeleteGroup()" pill>Cancel</b-button>
     </b-modal>
 
-    <b-modal ref="modal-delete-error" hide-footer>
+    <b-modal ref="modal-delete-error" :header-bg-variant="headerBgVariant" :header-text-variant="headerTextVariant" hide-footer>
+      <template slot="modal-title">
+        Error
+      </template>
       <div class="d-block text-center">
         <h6>{{this.deleteError}}</h6>
       </div>
-      <b-button @click="confirmDeleteGroupError()" pill>OK</b-button>
+      <b-button class="mt-3" variant="outline-danger" block @click="confirmDeleteGroupError()">OK</b-button>
     </b-modal>
 
     <b-modal ref="modal-confirm-delete" hide-footer>
@@ -38,13 +42,13 @@
       <b-button @click="cancelDeleteGroup()" pill>Cancel</b-button>
     </b-modal>
 
-    <b-modal ref="edit-group-modal" hide-footer>
+    <b-modal ref="edit-group-modal" title="Edit Group" @ok="handleEditOk" hide-footer>
       <div class="d-block text-center">
         <h6>Edit the following group fields</h6>
         <b-form-input v-model="editGroupName" placeholder="Enter group name"></b-form-input>
         <b-form-select v-model="editGroupFirmware" :options="ddFirmware" class="mb-3"></b-form-select>
       </div>
-      <b-button @click="updateGroupInMFOX()" pill variant="success">Edit</b-button>
+      <b-button @click="handleEditOk()" pill variant="success">Edit</b-button>
       <b-button @click="cancelEditGroup()" pill>Cancel</b-button>
     </b-modal>
 
@@ -63,6 +67,7 @@
 
 <script>
 import authentication from '../authentication';
+import shared from '../shared'
 export
   default {
     data() {
@@ -77,6 +82,9 @@ export
         groupUpdateBodyMFOX: {name: '', desired_fw_id: ''},
         allGroups: [],
         selectedFirmware: null,
+        variants: ['primary', 'secondary', 'success', 'warning', 'danger', 'info', 'light', 'dark'],
+        headerBgVariant: 'danger',
+        headerTextVariant: 'light',
         //editGroupFirmware: { text: '', value: ''},
         editGroupFirmware: [],
         ddFirmware: [],
@@ -93,6 +101,7 @@ export
     },
     methods: {
       handleLoadModal() {
+        console.log('handleLoadModal()');
           this.inputGroupName = '';
           this.selectedFirmware = null;
       },
@@ -118,6 +127,7 @@ export
           this.$refs['edit-group-modal'].show()
       },
       cancelEditGroup() {
+          console.log('cancelEditGroup()');
           this.$refs['edit-group-modal'].hide();
       },
       confirmDeleteGroupError() {
@@ -125,13 +135,26 @@ export
         this.deleteError = '';
       },
       handleOk(evt) {
+        console.log('handleOk()');
+        console.log(this);
         evt.preventDefault()
         if (!this.inputGroupName) {
             alert('Please enter a group name')
         } else if (!this.selectedFirmware) {
             alert('Please select a firmware version')
+        } else if (!this.editGroupName) {
+            alert('Please select a group name')
         } else {
             this.handleSubmit()
+        }
+      },
+      handleEditOk(evt) {
+        console.log('handleEditOk()');
+        console.log(this);
+        if (!this.editGroupName) {
+            alert('Please select a group name')
+        } else {
+            this.updateGroupInMFOX()
         }
       },
       handleOkDelete(evt) {
@@ -184,8 +207,9 @@ export
                 this.getAllGroupsFromMFOX();
               }).catch( (error) => {
                 console.log('updateGroupInMFOX() => END');
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
                 this.$refs['modal-delete-error'].show();
-                this.deleteError = error;
               });
           }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
@@ -216,7 +240,9 @@ export
                   this.allGroups = []
                 }
                 this.toggleLoading(false);
-                console.log(`error: ${error}`); // eslint-disable-line
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
+                this.$refs['modal-delete-error'].show();
               });
         }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line
@@ -270,16 +296,20 @@ export
         reader.readAsBinaryString(file);
       },
       uploadToMFOX() {
+        console.log('uploadToMFOX()');
         authentication.getAccessToken()
           .then( (token) => {
             let apiEndpoint = `${process.env.VUE_APP_API_ENDPOINT_URL}/v1/groups`;
             let accessToken = `Bearer ${token}`;
+            console.log('access token retrieved .... now create new group...')
             this.axios.post(apiEndpoint, this.groupUploadBodyMFOX, {headers: {'authorization': accessToken}})
               .then( (response) => {
                 console.log(`response: ${response}`); // eslint-disable-line
                 this.getAllGroupsFromMFOX();
               }).catch( (error) => {
-                console.log(`error: ${error}`); // eslint-disable-line
+                console.log(error);
+                this.deleteError = shared.getErrorResponseMessage(error);
+                this.$refs['modal-delete-error'].show();
               });
         }).catch( (error) => {
             console.log(`force user to sign out to fix the token issue: ${error}`); // eslint-disable-line

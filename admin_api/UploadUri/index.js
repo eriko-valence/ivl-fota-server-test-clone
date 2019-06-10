@@ -20,7 +20,22 @@ module.exports = function (context, req) {
             if (requestMethod === 'GET') {
                 createAzureStorageBlobSas(azureBlobStorageConnectionString); // get firmware upload URI
             }
-        });
+        }).catch((err) => {
+            if (err) {
+                console.log(err);
+                let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                client.trackException({exception: err.message, properties: props});
+                error = true;
+                context.res = {
+                    status: 500,             
+                    body: {
+                        code: 500,
+                        error: 'An error occured while connecting to the object data store.'
+                    }
+                };
+                context.done();
+            }
+          });
     });
 
     function createAzureStorageBlobSas(connection) {

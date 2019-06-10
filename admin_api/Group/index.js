@@ -43,9 +43,22 @@ module.exports =  function (context, req) {
                     deleteGroup(connection); //Deletes existing group from MFOX DB
                 }
             });
-        }).catch(function(error) {
-            console.log(error);
-        });
+        }).catch((err) => {
+            if (err) {
+                console.log(err);
+                let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                client.trackException({exception: err.message, properties: props});
+                error = true;
+                context.res = {
+                    status: 500,             
+                    body: {
+                        code: 500,
+                        error: 'An error occured while connecting to the database.'
+                    }
+                };
+                context.done();
+            }
+          });
     }).catch((err) => {
         if (err) {
             console.log(err);
