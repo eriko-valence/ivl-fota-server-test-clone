@@ -50,12 +50,12 @@ terraform apply -var-file="terraform.tfvars"
 	- Search the associated AD App (e.g., IVL_FOTA_Admin_API_DEV)
 	- Click OK after selecting this AD App
 	- Click 'Save'
-	- Select 'Azure Active Directory (Configured: Advanced)' under Authentication Providers
-	- Add the function app URL to the 'Allowed Tokens Audience' list
+	- Select 'Azure Active Directory Configured (Express : Existing App)' under Authentication Providers
+	- Add the admin api function app URL to the 'Allowed Tokens Audience' list
 		- Example: https://fa-ivlfota-admin-api-dev.azurewebsites.net
 	- Click 'Save'
 - Configure CORS on admin function app (Function App)
-	- Open the admin function app in the azure portal (e.g., fa-ivlfota-admin-api-dev)
+	- Open the admin api function app in the azure portal (e.g., fa-ivlfota-admin-api-dev)
 	- Navigate to Platform Features and select 'CORS'
 	- Add the admin web ui primary endpoint (e.g., https://saivlfotadev.z22.web.core.windows.net/)
 	- Click 'Save'
@@ -63,14 +63,16 @@ terraform apply -var-file="terraform.tfvars"
 	- Open Azure Active Directory in the azure portal
 	- Navigate to 'App Registration'
 	- Select the AD App representing the admin web ui (e.g., IVL_FOTA_Admin_Web_UI_DEV)
-	- Select 'Add a redirect URI'
+	- Select the 'Redirect URIs' link
 	- Add the admin web ui primary endpoint (e.g., https://saivlfotadev.z22.web.core.windows.net/)
 	- Click 'Save'
 	- Select 'API permissions'
 	- Click "Add a permission"
 	- Select "My APIs"
-	- Select the API app name associated (e.g., name of the AAD app that corresponds to your azure function): (e.g., IVL_FOTA_Admin_API_DEV)
+	- Select admin api function aad app name
+		- Example: IVL_FOTA_Admin_API_DEV
 	- Select "user_impersonation" and click "Add permissions"
+	- Admin will have to consent (alternatively, users will be prompted to consent the first time they login)
 - Enable AAD User Assignment for admin api AAD app (Azure Active Directory)
 	- Open Azure Active Directory in the azure portal
 	- Navigate to 'Enterprise applications'
@@ -78,7 +80,7 @@ terraform apply -var-file="terraform.tfvars"
 	- Select 'Properties'
 	- Set 'User assignment required?' to 'Enabled'
 	- Select 'Users and groups'
-	- Add authorized admin web ui users here
+	- Add your list of authorized admin web ui users here
 - Setup cname record for mf2fota-dev.2to8.cc
 - Configure SSL certificate
 		
