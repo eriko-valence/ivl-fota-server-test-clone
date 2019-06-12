@@ -11,6 +11,13 @@ az login
 az account list --output table
 az account set --subscription "IVL Development"
 ```
+## Example variable values used by README.md
+```
+aad_admin_web_ui_app_name = "IVL_FOTA_Admin_Web_UI"
+aad_admin_rest_api_app_name = "IVL_FOTA_Admin_API"
+aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
+```
+
 ## Deploy Azure infrastructure using Terraform
 ```
 terraform init
@@ -63,6 +70,13 @@ terraform apply -var-file="terraform.tfvars"
 	- Add 'index.html' to to index and error document paths
 	- Click 'Save'
 	- Note: The primary endpoint will be the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net/)
+- Deploy admin web ui to azure blob static website
+	- Update the following variables in 'iv_fota_server\admin_web_ui\.env.production': 
+		- VUE_APP_API_ENDPOINT_URL (i.e., admin api function app url)
+		- VUE_APP_AAD_CLIENT (i.e., aad web ui app id - e.g., app id for 'IVL_FOTA_Admin_Web_UI_DEV')
+		- VUE_APP_AAD_REDIRECT_URI (i.e., admin web ui url)
+	- Change the directory to 'iv_fota_server\admin_web_ui' and run the command `npm run build`
+	- Upload all contents in 'iv_fota_server\admin_web_ui\dist' to azure storage blob container $web
 - Enable AAD auth on admin function app (Function App)
 	- Note: Terraform does not currently support Function app AAD auth configuration 
 		- https://github.com/terraform-providers/terraform-provider-azurerm/issues/1992
@@ -103,6 +117,18 @@ terraform apply -var-file="terraform.tfvars"
 	- Select 'Microsoft Graph'
 	- Select 'Deleted permissions'
 	- Select 'User' -> 'User.Read' and click "Add permissions"
+	- Note: These permission should be admin consented. There are two different ways to do this:
+		- Option #1: Azure Portal
+			- Open Azure Active Directory in the azure portal
+			- Navigate to 'App Registration'
+			- Select the AD App representing the admin web ui (e.g., IVL_FOTA_Admin_Web_UI_DEV)
+			- Select 'API permissions'
+			- Under 'Grant consent', select the 'Grant admin consent for {tenant_name}'
+		- Option #2: 
+			- Build and run the following admin consent URL:
+			```
+			https://login.microsoftonline.com/{tenant_id}/adminconsent?client_id={client_id}&redirect_uri={admin_web_ui_url}
+			```
 	- Note: Admin will have to consent (alternatively, users will be prompted to consent the first time they login)
 - Enable AAD User Assignment for admin api AAD app (Azure Active Directory)
 	- Open Azure Active Directory in the azure portal
@@ -114,13 +140,6 @@ terraform apply -var-file="terraform.tfvars"
 	- Add your list of authorized admin web ui users here
 - Setup cname record for mf2fota-dev.2to8.cc
 - Configure SSL certificate
-- Deploy admin web ui to azure blob static website
-	- Update the following variables in 'iv_fota_server\admin_web_ui\.env.production': 
-		- VUE_APP_API_ENDPOINT_URL
-		- VUE_APP_AAD_CLIENT
-		- VUE_APP_AAD_REDIRECT_URI
-	- Run the command `iv_fota_server\admin_web_ui> npm run build`
-	- Upload all contents in 'iv_fota_server\admin_web_ui\dist' to azure storage blob container $web
 		
 ## Destroy Azure infrastructure using Terraform
 ```
