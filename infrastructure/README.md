@@ -94,12 +94,16 @@ terraform apply -var-file="terraform.tfvars"
 	- Add the admin web ui primary endpoint (e.g., https://saivlfotadev.z22.web.core.windows.net/)
 	- Click 'Save'
 	- Select 'API permissions'
-	- Click "Add a permission"
+	- Click "+ Add a permission"
 	- Select "My APIs"
 	- Select admin api function aad app name
 		- Example: IVL_FOTA_Admin_API_DEV
 	- Select "user_impersonation" and click "Add permissions"
-	- Admin will have to consent (alternatively, users will be prompted to consent the first time they login)
+	- Click "+ Add a permission"
+	- Select 'Microsoft Graph'
+	- Select 'Deleted permissions'
+	- Select 'User' -> 'User.Read' and click "Add permissions"
+	- Note: Admin will have to consent (alternatively, users will be prompted to consent the first time they login)
 - Enable AAD User Assignment for admin api AAD app (Azure Active Directory)
 	- Open Azure Active Directory in the azure portal
 	- Navigate to 'Enterprise applications'
