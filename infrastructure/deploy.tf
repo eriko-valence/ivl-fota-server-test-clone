@@ -1,3 +1,7 @@
+terraform {
+  required_version = ">= 0.12"
+}
+
 variable "env_prefix_lower" {
   default = "dev"
 }
@@ -54,7 +58,8 @@ variable "function_app_default_node_version" {
   default = "10.14.1"
 }
 
-data "azurerm_subscription" "current" {}
+data "azurerm_subscription" "current" {
+}
 
 output "env_azure_subscription_display_name" {
   value = "${data.azurerm_subscription.current.display_name}"
