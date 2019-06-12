@@ -293,7 +293,7 @@ resource "azurerm_key_vault_access_policy" "kvap-device-api" {
   key_vault_id          = "${azurerm_key_vault.kv-infrastructure.id}"
 
   tenant_id = "${var.aad_tenant_id}"
-  object_id = "${azuread_application.aadapp-device-api.id}"
+  object_id = "${azuread_service_principal.aadsp-device-api.id}"
 
   key_permissions = [
     "get",
@@ -308,7 +308,7 @@ resource "azurerm_key_vault_access_policy" "kvap-admin-api" {
   key_vault_id          = "${azurerm_key_vault.kv-infrastructure.id}"
 
   tenant_id = "${var.aad_tenant_id}"
-  object_id = "${azuread_application.aadapp-admin-api.id}"
+  object_id = "${azuread_service_principal.aadsp-admin-api.id}"
 
   key_permissions = [
     "get",
