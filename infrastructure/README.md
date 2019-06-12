@@ -26,6 +26,33 @@ terraform apply -var-file="terraform.tfvars"
 'AzureSqlDatabaseName'
 'AzureSqlServerName'
 ```
+- Set Function App Azure Key Vault credentials (Azure )
+	- Admin API
+		- Open Azure Active Directory in the azure portal
+		- Navigate to 'App Registration'
+		- Select the AD App representing the admin web ui (e.g., IVL_FOTA_Admin_API_DEV)
+		- Select 'Certificates & secrets'
+		- Select '+New client secret' button
+		- Type in a description (e.g, "azure_key_vault")
+		- Set Expires to 'Never'
+		- Select 'Add'
+		- Copy the secret value (you won't be able to retrieve it after exiting this pane)
+		- Open the admin function app in the azure portal (e.g., fa-ivlfota-admin-api-dev)
+		- Navigate to Platform Features and select 'Configuration' from the Overview tabe
+		- Add the secret value to the application setting 'AzureADClientSecret'
+	- Device API
+		- Open Azure Active Directory in the azure portal
+		- Navigate to 'App Registration'
+		- Select the AD App representing the admin web ui (e.g., IVL_FOTA_Device_API_DEV)
+		- Select 'Certificates & secrets'
+		- Select '+New client secret' button
+		- Type in a description (e.g, "azure_key_vault")
+		- Set Expires to 'Never'
+		- Select 'Add'
+		- Copy the secret value (you won't be able to retrieve it after exiting this pane)
+		- Open the device function app in the azure portal (e.g., fa-ivlfota-device-api-dev)
+		- Navigate to Platform Features and select 'Configuration' from the Overview tabe
+		- Add the secret value to the application setting 'AzureADClientSecret'
 - Enable static website hosting (Azure Storage)
 	- Note: Terraform does not currently support Azure storage static website hosting configuration
 		- https://github.com/terraform-providers/terraform-provider-azurerm/issues/1903
