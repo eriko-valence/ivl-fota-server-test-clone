@@ -224,7 +224,7 @@ resource "azurerm_function_app" "fa-device-api" {
   resource_group_name       = "${azurerm_resource_group.rg-infrastructure.name}"
   app_service_plan_id       = "${azurerm_app_service_plan.sp-infrastructure.id}"
   storage_connection_string = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
-  app_settings {
+  app_settings = {
     HASH = "${data.archive_file.device_api_zip.output_base64sha256}"
     WEBSITE_RUN_FROM_PACKAGE = "https://${azurerm_storage_account.sa-infrastructure.name}.blob.core.windows.net/${azurerm_storage_container.sc-function-releases.name}/${azurerm_storage_blob.sb-functionapp-device-api.name}${data.azurerm_storage_account_sas.sas-infrastructure.sas}"
     AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
@@ -240,7 +240,7 @@ resource "azurerm_function_app" "fa-device-api" {
     WEBSITE_NODE_DEFAULT_VERSION = "${var.function_app_default_node_version}"
   }
   site_config {
-    linux_fx_version = "NODE:${var.function_app_default_node_version}",
+    linux_fx_version = "NODE:${var.function_app_default_node_version}"
     always_on = "true"
   }
 }
@@ -252,7 +252,7 @@ resource "azurerm_function_app" "fa-admin-api" {
   resource_group_name       = "${azurerm_resource_group.rg-infrastructure.name}"
   app_service_plan_id       = "${azurerm_app_service_plan.sp-infrastructure.id}"
   storage_connection_string = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
-  app_settings {
+  app_settings = {
     HASH = "${data.archive_file.admin_api_zip.output_base64sha256}"
     WEBSITE_RUN_FROM_PACKAGE = "https://${azurerm_storage_account.sa-infrastructure.name}.blob.core.windows.net/${azurerm_storage_container.sc-function-releases.name}/${azurerm_storage_blob.sb-functionapp-admin-api.name}${data.azurerm_storage_account_sas.sas-infrastructure.sas}"
     AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
@@ -268,7 +268,7 @@ resource "azurerm_function_app" "fa-admin-api" {
     WEBSITE_NODE_DEFAULT_VERSION = "${var.function_app_default_node_version}"
   }
   site_config {
-    linux_fx_version = "NODE:${var.function_app_default_node_version}",
+    linux_fx_version = "NODE:${var.function_app_default_node_version}"
     always_on = "true"
   }
 }
@@ -321,7 +321,7 @@ resource "azurerm_key_vault_access_policy" "kvap-admin-api" {
 
 # Configure the Microsoft Azure Active Directory Provider
 provider "azuread" {
-  version = "=0.3.0"
+  version = "~>0.3"
 }
 
 # Create an application
