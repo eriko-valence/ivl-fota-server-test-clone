@@ -10,16 +10,18 @@ const errors = require('../Shared/errors');
 const appInsights = require("applicationinsights");
 
 module.exports =  function (context, req) {
+    context.log('incoming request...');
+    console.log('incoming request...');
     let requestMethod = _.get(req, 'method', ''); 
     let sortBy = _.get(req.query, 'sort_by', ''); //example --> sort_by=desc(deviceid)
-    let secret = process.env.AzureADClientSecret;
-    let clientId = process.env.AzureADClientID;
-    let domain = process.env.AzureADTenantID;
+    let secret = _.get(process.env, 'AzureADClientSecret', '');
+    let clientId = _.get(process.env, 'AzureADClientID', '');
+    let domain = _.get(process.env, 'AzureADTenantID', '');
 	appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
     let client = appInsights.defaultClient;
     msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
         const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
-        var keyVaultname = process.env.AzureKeyVaultName;
+        var keyVaultname = _.get(process.env, 'AzureKeyVaultName', '');
         var vaultUri = "https://" + keyVaultname + ".vault.azure.net/";
         let var1 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginName", "");
         let var2 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginPass", "");

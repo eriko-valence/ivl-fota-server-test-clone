@@ -50,6 +50,10 @@ variable "azure_storage_blob_container_name_firmware_binaries" {
   default = ""
 }
 
+variable "function_app_default_node_version" {
+  default = "10.14.1"
+}
+
 data "azurerm_subscription" "current" {}
 
 output "env_azure_subscription_display_name" {
@@ -223,16 +227,21 @@ resource "azurerm_function_app" "fa-device-api" {
   app_settings {
     HASH = "${data.archive_file.device_api_zip.output_base64sha256}"
     WEBSITE_RUN_FROM_PACKAGE = "https://${azurerm_storage_account.sa-infrastructure.name}.blob.core.windows.net/${azurerm_storage_container.sc-function-releases.name}/${azurerm_storage_blob.sb-functionapp-device-api.name}${data.azurerm_storage_account_sas.sas-infrastructure.sas}"
-	AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
-	"APPINSIGHTS_INSTRUMENTATIONKEY" = "${azurerm_application_insights.ai-infrastructure.instrumentation_key}"
-	"AzureBlobContainer" = "${var.azure_storage_blob_container_name_firmware_binaries}"
-	"AzureBlobNamePrefix" = "${var.azure_storage_blob_name_prefix_firmware_binaries}"
-	"AzureBlobEndpoint" = "${azurerm_storage_account.sa-infrastructure.primary_blob_endpoint}"
-	"AzureBlobStorageDevice" = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
-	"AzureKeyVaultName" = "${azurerm_key_vault.kv-infrastructure.name}"
+    AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
+    APPINSIGHTS_INSTRUMENTATIONKEY = "${azurerm_application_insights.ai-infrastructure.instrumentation_key}"
+    AzureADClientID = "${azuread_application.aadapp-device-api.application_id}"
+    AzureADClientSecret = "MANUALLY_SET"
+    AzureADTenantID = "${var.aad_tenant_id}"
+    AzureBlobContainer = "${var.azure_storage_blob_container_name_firmware_binaries}"
+    AzureBlobNamePrefix = "${var.azure_storage_blob_name_prefix_firmware_binaries}"
+    AzureBlobEndpoint = "${azurerm_storage_account.sa-infrastructure.primary_blob_endpoint}"
+    AzureBlobStorageDevice = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
+    AzureKeyVaultName = "${azurerm_key_vault.kv-infrastructure.name}",
+    WEBSITE_NODE_DEFAULT_VERSION = "${var.function_app_default_node_version}"
   }
   site_config {
-    linux_fx_version = "node:10.14.1"
+    linux_fx_version = "NODE:${var.function_app_default_node_version}",
+    always_on = "true"
   }
 }
 
@@ -246,19 +255,21 @@ resource "azurerm_function_app" "fa-admin-api" {
   app_settings {
     HASH = "${data.archive_file.admin_api_zip.output_base64sha256}"
     WEBSITE_RUN_FROM_PACKAGE = "https://${azurerm_storage_account.sa-infrastructure.name}.blob.core.windows.net/${azurerm_storage_container.sc-function-releases.name}/${azurerm_storage_blob.sb-functionapp-admin-api.name}${data.azurerm_storage_account_sas.sas-infrastructure.sas}"
-	AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
-	"APPINSIGHTS_INSTRUMENTATIONKEY" = "${azurerm_application_insights.ai-infrastructure.instrumentation_key}"
-	"AzureADClientID" = "${azuread_application.aadapp-admin-api.application_id}"
-	"AzureADClientSecret" = "MANUALLY_SET"
-	"AzureADTenantID" = "${var.aad_tenant_id}"
-	"AzureBlobContainer" = "${var.azure_storage_blob_container_name_firmware_binaries}"
-	"AzureBlobNamePrefix" = "${var.azure_storage_blob_name_prefix_firmware_binaries}"
-	"AzureBlobEndpoint" = "${azurerm_storage_account.sa-infrastructure.primary_blob_endpoint}"
-	"AzureBlobStorageDevice" = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
-	"AzureKeyVaultName" = "${azurerm_key_vault.kv-infrastructure.name}"
+    AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
+    APPINSIGHTS_INSTRUMENTATIONKEY = "${azurerm_application_insights.ai-infrastructure.instrumentation_key}"
+    AzureADClientID = "${azuread_application.aadapp-admin-api.application_id}"
+    AzureADClientSecret = "MANUALLY_SET"
+    AzureADTenantID = "${var.aad_tenant_id}"
+    AzureBlobContainer = "${var.azure_storage_blob_container_name_firmware_binaries}"
+    AzureBlobNamePrefix = "${var.azure_storage_blob_name_prefix_firmware_binaries}"
+    AzureBlobEndpoint = "${azurerm_storage_account.sa-infrastructure.primary_blob_endpoint}"
+    AzureBlobStorageDevice = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
+    AzureKeyVaultName = "${azurerm_key_vault.kv-infrastructure.name}"
+    WEBSITE_NODE_DEFAULT_VERSION = "${var.function_app_default_node_version}"
   }
   site_config {
-    linux_fx_version = "node:10.14.1"
+    linux_fx_version = "NODE:${var.function_app_default_node_version}",
+    always_on = "true"
   }
 }
 
@@ -324,6 +335,7 @@ resource "azuread_application" "aadapp-admin-web-ui" {
 # Create an application
 resource "azuread_application" "aadapp-admin-api" {
   name = "${var.aad_admin_rest_api_app_name}_${var.env_prefix_upper}"
+  identifier_uris = ["https://fa-ivlfota-admin-api-dev.azurewebsites.net"]
 }
 
 # Create an application
