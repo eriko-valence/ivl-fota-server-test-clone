@@ -230,13 +230,13 @@ resource "azurerm_function_app" "fa-device-api" {
     AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
     APPINSIGHTS_INSTRUMENTATIONKEY = "${azurerm_application_insights.ai-infrastructure.instrumentation_key}"
     AzureADClientID = "${azuread_application.aadapp-device-api.application_id}"
-    AzureADClientSecret = "MANUALLY_SET"
     AzureADTenantID = "${var.aad_tenant_id}"
     AzureBlobContainer = "${var.azure_storage_blob_container_name_firmware_binaries}"
     AzureBlobNamePrefix = "${var.azure_storage_blob_name_prefix_firmware_binaries}"
     AzureBlobEndpoint = "${azurerm_storage_account.sa-infrastructure.primary_blob_endpoint}"
     AzureBlobStorageDevice = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
-    AzureKeyVaultName = "${azurerm_key_vault.kv-infrastructure.name}",
+    AzureKeyVaultName = "${azurerm_key_vault.kv-infrastructure.name}"
+    AzureFunctionAppHostName = "fa-${var.base_name}-device-api-${var.env_prefix_lower}.azurewebsites.net"
     WEBSITE_NODE_DEFAULT_VERSION = "${var.function_app_default_node_version}"
   }
   site_config {
@@ -258,13 +258,13 @@ resource "azurerm_function_app" "fa-admin-api" {
     AzureWebJobsStorage = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
     APPINSIGHTS_INSTRUMENTATIONKEY = "${azurerm_application_insights.ai-infrastructure.instrumentation_key}"
     AzureADClientID = "${azuread_application.aadapp-admin-api.application_id}"
-    AzureADClientSecret = "MANUALLY_SET"
     AzureADTenantID = "${var.aad_tenant_id}"
     AzureBlobContainer = "${var.azure_storage_blob_container_name_firmware_binaries}"
     AzureBlobNamePrefix = "${var.azure_storage_blob_name_prefix_firmware_binaries}"
     AzureBlobEndpoint = "${azurerm_storage_account.sa-infrastructure.primary_blob_endpoint}"
     AzureBlobStorageDevice = "${azurerm_storage_account.sa-infrastructure.primary_connection_string}"
     AzureKeyVaultName = "${azurerm_key_vault.kv-infrastructure.name}"
+    AzureFunctionAppHostName = "fa-${var.base_name}-admin-api-${var.env_prefix_lower}.azurewebsites.net"
     WEBSITE_NODE_DEFAULT_VERSION = "${var.function_app_default_node_version}"
   }
   site_config {

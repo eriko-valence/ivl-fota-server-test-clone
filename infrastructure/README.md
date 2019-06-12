@@ -39,7 +39,7 @@ terraform apply -var-file="terraform.tfvars"
 		- Copy the secret value (you won't be able to retrieve it after exiting this pane)
 		- Open the admin function app in the azure portal (e.g., fa-ivlfota-admin-api-dev)
 		- Navigate to Platform Features and select 'Configuration' from the Overview tabe
-		- Add the secret value to the application setting 'AzureADClientSecret'
+		- Create the setting 'AzureADClientSecret' and add the secret as its value
 	- Device API
 		- Open Azure Active Directory in the azure portal
 		- Navigate to 'App Registration'
@@ -52,7 +52,7 @@ terraform apply -var-file="terraform.tfvars"
 		- Copy the secret value (you won't be able to retrieve it after exiting this pane)
 		- Open the device function app in the azure portal (e.g., fa-ivlfota-device-api-dev)
 		- Navigate to Platform Features and select 'Configuration' from the Overview tabe
-		- Add the secret value to the application setting 'AzureADClientSecret'
+		- Create the setting 'AzureADClientSecret' and add the secret as its value
 - Enable static website hosting (Azure Storage)
 	- Note: Terraform does not currently support Azure storage static website hosting configuration
 		- https://github.com/terraform-providers/terraform-provider-azurerm/issues/1903
@@ -114,6 +114,13 @@ terraform apply -var-file="terraform.tfvars"
 	- Add your list of authorized admin web ui users here
 - Setup cname record for mf2fota-dev.2to8.cc
 - Configure SSL certificate
+- Deploy admin web ui to azure blob static website
+	- Update the following variables in 'iv_fota_server\admin_web_ui\.env.production': 
+		- VUE_APP_API_ENDPOINT_URL
+		- VUE_APP_AAD_CLIENT
+		- VUE_APP_AAD_REDIRECT_URI
+	- Run the command `iv_fota_server\admin_web_ui> npm run build`
+	- Upload all contents in 'iv_fota_server\admin_web_ui\dist' to azure storage blob container $web
 		
 ## Destroy Azure infrastructure using Terraform
 ```
