@@ -1,17 +1,18 @@
 # Deploy the website to Azure
 
-## Install Terraform & Azure CLI (Only needs to be done once on local deployment system)
+## Install Terraform & Azure CLI
+NOTE: Only needs to be done once on local deployment system
 - Install Azure CLI
 - Install Terraform
 
 ## Manually create Azure storage account for storing Terraform state
-## (This only needs to be done once per Azure subscription)
+NOTE: This only needs to be done once per Azure subscription
 - Create a new Azure resource group (e.g., rg-ivlterraform-state)
 - Create a new Azure storage account (e.g., ivlterraformstate)
 - Create a new Azure sotrage account blob container (e.g., tfstate)
 
 ## Update Terraform deployment script with these Azure storage account values (from last step)
-## (Only required if new resources were set up from above step)
+NOTE: Only required if new resources were set up from above step
 - Example:
 ```
 terraform {
