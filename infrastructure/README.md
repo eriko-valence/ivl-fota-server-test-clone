@@ -138,6 +138,8 @@ terraform apply -var-file="terraform.tfvars"
 		- VUE_APP_AAD_REDIRECT_URI (i.e., admin web ui url)
 	- Change the directory to 'iv_fota_server\admin_web_ui' and run the command `npm run build`
 	- Upload all contents in 'iv_fota_server\admin_web_ui\dist' to azure storage blob container $web
+		- Change to the directory 'iv_fota_server\admin_web_ui\dist'
+		- Run this command: `blob upload-batch --account-name {storage_acct_name} --destination '$web' --source ./`
 - Enable AAD auth on admin function app (Function App)
 	- Note: Terraform does not currently support Function app AAD auth configuration 
 		- https://github.com/terraform-providers/terraform-provider-azurerm/issues/1992
