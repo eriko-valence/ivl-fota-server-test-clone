@@ -338,7 +338,7 @@ resource "azuread_application" "aadapp-admin-web-ui" {
 # Create an application
 resource "azuread_application" "aadapp-admin-api" {
   name            = "${var.aad_admin_rest_api_app_name}_${var.env_prefix_upper}"
-  identifier_uris = ["https://fa-ivlfota-admin-api-dev.azurewebsites.net"]
+  identifier_uris = ["https://fa-${var.base_name}-admin-api-${var.env_prefix_lower}.azurewebsites.net"]
 }
 
 # Create an application
