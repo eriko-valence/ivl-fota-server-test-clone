@@ -209,7 +209,7 @@ resource "azurerm_application_insights" "ai-infrastructure" {
 }
 
 resource "azurerm_function_app" "fa-device-api" {
-  name                      = "fa-${var.base_name}-device-api-${lower(terraform.workspace)}"
+  name                      = "ivlapidevice-${lower(terraform.workspace)}.azurewebsites.net"
   version                   = "~2"
   location                  = azurerm_resource_group.rg-infrastructure.location
   resource_group_name       = azurerm_resource_group.rg-infrastructure.name
