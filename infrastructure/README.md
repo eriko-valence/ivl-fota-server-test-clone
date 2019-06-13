@@ -1,15 +1,17 @@
 # Deploy the website to Azure
 
-## Install Terraform & Azure CLI
+## Install Terraform & Azure CLI (Only needs to be done once on local deployment system)
 - Install Azure CLI
 - Install Terraform
 
 ## Manually create Azure storage account for storing Terraform state
+## (This only needs to be done once per Azure subscription)
 - Create a new Azure resource group (e.g., rg-ivlterraform-state)
 - Create a new Azure storage account (e.g., ivlterraformstate)
 - Create a new Azure sotrage account blob container (e.g., tfstate)
 
 ## Update Terraform deployment script with these Azure storage account values (from last step)
+## (Only required if new resources were set up from above step)
 - Example:
 ```
 terraform {
@@ -37,13 +39,13 @@ aad_admin_rest_api_app_name = "IVL_FOTA_Admin_API"
 aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
 ```
 
-## Prepare Terraform variables
+## Prepare Terraform variables (set in terraform.tfvars file)
 - The following values are to used to name azure resources (e.g., rg-ivlfota-dev) and MUST NOT be shared with other environments
 ```
 env_prefix_lower = "dev"
 env_prefix_upper = "DEV"
 ```
-- The following values can be customized based on preference
+- The following values can be customized based on preference:
 ```
 base_name = "ivlfota"
 aad_admin_web_ui_app_name = "IVL_FOTA_Admin_Web_UI"
@@ -66,7 +68,7 @@ azure_storage_blob_name_prefix_firmware_binaries = "bin/"
 ```
 
 ## Setup Terraform workspace
-- Create a new workspace if you don't yet have one for the environment (e.g., dev) you will be deploying. For exmaple: 
+- Create a new workspace if you don't yet have one for the environment (e.g., dev) you will be deploying. For example: 
 ```
 terraform workspace new dev
 ```
