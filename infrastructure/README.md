@@ -18,6 +18,41 @@ aad_admin_rest_api_app_name = "IVL_FOTA_Admin_API"
 aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
 ```
 
+## Prepare Terraform variables
+- The following variables need to be unique (i.e., make sure existing Azure resources don't use these names)
+```
+env_prefix_lower = "dev"
+env_prefix_upper = "DEV"
+base_name = "ivlfota" <-- This value can be shared across environments - just remember to change the env prefix
+aad_admin_web_ui_app_name = "IVL_FOTA_Admin_Web_UI"
+aad_admin_rest_api_app_name = "IVL_FOTA_Admin_API"
+aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
+```
+- The following variables should be set according to your environment:
+```
+aad_tenant_id = "{tenantid}"
+location = "westus"
+```
+- These variables will likely not need to be updated: 
+```
+function_app_default_node_version = "10.14.1"
+function_app_release_package_name_admin_api = "functionapp-admin-api.zip"
+function_app_release_package_name_device_api = "functionapp-device-api.zip"
+azure_storage_blob_container_name_function_app_releases = "function-releases"
+azure_storage_blob_container_name_firmware_binaries = "fota"
+azure_storage_blob_name_prefix_firmware_binaries = "bin/"
+```
+
+## Setup Terraform workspace
+- Create a new workspace if you don't yet have one for the environment (e.g., dev) you will be deploying. For exmaple: 
+```
+terraform workspace new dev
+```
+- Switch to the existing workspace if you already have one for your environment to be deployed. For example:
+```
+terraform workspace switch dev
+```
+
 ## Deploy Azure infrastructure using Terraform
 ```
 terraform init
