@@ -158,8 +158,10 @@ terraform apply -var-file="terraform.tfvars"
 	- Click OK after selecting this AD App
 	- Click 'Save'
 	- Select 'Azure Active Directory Configured (Express : Existing App)' under Authentication Providers
+	- Click 'Advanced'
 	- Add the admin api function app URL to the 'Allowed Tokens Audience' list
 		- Example: https://fa-ivlfota-admin-api-dev.azurewebsites.net
+	- Click 'OK'
 	- Click 'Save'
 - Configure CORS on admin function app (Function App)
 	- Open the admin api function app in the azure portal (e.g., fa-ivlfota-admin-api-dev)
