@@ -74,6 +74,10 @@ terraform workspace new dev
 ```
 terraform workspace switch dev
 ```
+- Confirm you are now using the correct workspace
+```
+terraform workspace list
+```
 
 ## Deploy Azure infrastructure using Terraform
 ```
