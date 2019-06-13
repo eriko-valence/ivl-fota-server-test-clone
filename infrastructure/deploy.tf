@@ -1,5 +1,11 @@
 terraform {
   required_version = ">= 0.12"
+    backend "azurerm" {
+    storage_account_name = "ivlterraformstate"
+    resource_group_name = "rg-ivlterraform-state"
+    container_name       = "tfstate"
+    key                  = "ivl.terraform.tfstate"
+  }
 }
 
 variable "env_prefix_lower" {

@@ -1,8 +1,27 @@
 # Deploy the website to Azure
 
-## Setup Terraform environment
+## Install Terraform & Azure CLI
 - Install Azure CLI
 - Install Terraform
+
+## Manually create Azure storage account for storing Terraform state
+- Create a new Azure resource group (e.g., rg-ivlterraform-state)
+- Create a new Azure storage account (e.g., ivlterraformstate)
+- Create a new Azure sotrage account blob container (e.g., tfstate)
+
+## Update Terraform deployment script with these Azure storage account
+- Example:
+```
+terraform {
+  required_version       = ">= 0.12"
+    backend "azurerm" {
+    storage_account_name = "ivlterraformstate"
+    resource_group_name  = "rg-ivlterraform-state"
+    container_name       = "tfstate"
+    key                  = "ivl.terraform.tfstate"
+  }
+}
+```
 
 ## Setup Terraform environment
 - Login using the azure command line tool
@@ -19,21 +38,24 @@ aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
 ```
 
 ## Prepare Terraform variables
-- The following variables need to be unique (i.e., make sure existing Azure resources don't use these names)
+- The following values are to used to name azure resources (e.g., rg-ivlfota-dev) and MUST NOT be shared with other environments
 ```
 env_prefix_lower = "dev"
 env_prefix_upper = "DEV"
-base_name = "ivlfota" <-- This value can be shared across environments - just remember to change the env prefix
+```
+- The following values can be customized based on preference
+```
+base_name = "ivlfota"
 aad_admin_web_ui_app_name = "IVL_FOTA_Admin_Web_UI"
 aad_admin_rest_api_app_name = "IVL_FOTA_Admin_API"
 aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
 ```
-- The following variables should be set according to your environment:
+- The following values should be set according to your environment requirements:
 ```
 aad_tenant_id = "{tenantid}"
 location = "westus"
 ```
-- These variables will likely not need to be updated: 
+- The following values do not neee to be updated: 
 ```
 function_app_default_node_version = "10.14.1"
 function_app_release_package_name_admin_api = "functionapp-admin-api.zip"
