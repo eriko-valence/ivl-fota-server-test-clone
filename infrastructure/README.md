@@ -166,7 +166,7 @@ terraform apply -var-file="terraform.tfvars"
 - Configure CORS on admin function app (Function App)
 	- Open the admin api function app in the azure portal (e.g., fa-ivlfota-admin-api-dev)
 	- Navigate to Platform Features and select 'CORS'
-	- Add the admin web ui primary endpoint (e.g., https://saivlfotadev.z22.web.core.windows.net/)
+	- Add the admin web ui primary endpoint (e.g., https://saivlfotadev.z22.web.core.windows.net)
 	- Click 'Save'
 - Configure admin web ui AAD app (Azure Active Directory)
 	- Open Azure Active Directory in the azure portal
@@ -203,9 +203,11 @@ terraform apply -var-file="terraform.tfvars"
 	- Navigate to 'Enterprise applications'
 	- Select the admin api AAD app (e.g., IVL_FOTA_Admin_API_DEV)
 	- Select 'Properties'
-	- Set 'User assignment required?' to 'Enabled'
+	- Set 'User assignment required?' to 'Yes'
+	- Click 'Save'
 	- Select 'Users and groups'
 	- Add your list of authorized admin web ui users here
+	- Click 'Save'
 - Setup cname record for mf2fota-dev.2to8.cc
 - Configure SSL certificate
 		
