@@ -4,6 +4,12 @@
 NOTE: Only needs to be done once on local deployment system
 - Install Azure CLI
 - Install Terraform
+- Install node
+- Clone repo
+
+## Install package dependencies
+- In repo directory, navigate to 'admin_api' directory
+- Run 'npm install'
 
 ## Manually create Azure storage account for storing Terraform state
 NOTE: This only needs to be done once per Azure subscription
