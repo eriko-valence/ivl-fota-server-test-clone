@@ -1,5 +1,3 @@
-env_prefix_lower = "dev"
-env_prefix_upper = "DEV"
 base_name = "ivlfota"
 aad_admin_web_ui_app_name = "IVL_FOTA_Admin_Web_UI"
 aad_admin_rest_api_app_name = "IVL_FOTA_Admin_API"

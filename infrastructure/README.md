@@ -41,11 +41,6 @@ aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
 ```
 
 ## Prepare Terraform variables (set in terraform.tfvars file)
-- The following values are to used to name azure resources (e.g., rg-ivlfota-dev) and MUST NOT be shared with other environments
-```
-env_prefix_lower = "dev"
-env_prefix_upper = "DEV"
-```
 - The following values can be customized based on preference:
 ```
 base_name = "ivlfota"
@@ -68,6 +63,12 @@ azure_storage_blob_container_name_firmware_binaries = "fota"
 azure_storage_blob_name_prefix_firmware_binaries = "bin/"
 ```
 
+## Initialize Terraform
+This will set up the Terraform state to be resident on Azure and initialize providers.
+```
+terraform init
+```
+
 ## Setup Terraform workspace
 - Create a new workspace if you don't yet have one for the environment (e.g., dev) you will be deploying. For example: 
 ```
@@ -84,7 +85,6 @@ terraform workspace list
 
 ## Deploy Azure infrastructure using Terraform
 ```
-terraform init
 terraform apply -var-file="terraform.tfvars"
 ```
 
