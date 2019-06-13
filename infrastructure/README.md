@@ -9,7 +9,7 @@
 - Create a new Azure storage account (e.g., ivlterraformstate)
 - Create a new Azure sotrage account blob container (e.g., tfstate)
 
-## Update Terraform deployment script with these Azure storage account
+## Update Terraform deployment script backedn section with these Azure storage account values (from last step)
 - Example:
 ```
 terraform {
