@@ -9,16 +9,16 @@
 - Create a new Azure storage account (e.g., ivlterraformstate)
 - Create a new Azure sotrage account blob container (e.g., tfstate)
 
-## Update Terraform deployment script backedn section with these Azure storage account values (from last step)
+## Update Terraform deployment with these Azure storage account values (from last step)
 - Example:
 ```
 terraform {
   required_version       = ">= 0.12"
     backend "azurerm" {
-    storage_account_name = "ivlterraformstate"
-    resource_group_name  = "rg-ivlterraform-state"
-    container_name       = "tfstate"
-    key                  = "ivl.terraform.tfstate"
+    storage_account_name = "ivlterraformstate"  <-- UPDATE
+    resource_group_name  = "rg-ivlterraform-state" <-- UPDATE
+    container_name       = "tfstate" <-- UPDATE
+    key                  = "ivl.terraform.tfstate" <-- OPTIONALLY UPDATE
   }
 }
 ```
