@@ -203,6 +203,11 @@ terraform apply -var-file="terraform.tfvars"
 - Configure SSL certificate
 		
 ## Destroy Azure infrastructure using Terraform
+- Confirm you are now using the correct workspace (e.g., "dev")
 ```
-terraform destroy
+terraform workspace list
+```
+- Destroy the environment
+```
+terraform destroy -var-file="terraform.dev.tfvars"
 ```
