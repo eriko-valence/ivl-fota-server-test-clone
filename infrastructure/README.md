@@ -55,7 +55,7 @@ aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
 aad_tenant_id = "{tenantid}"
 location = "westus"
 ```
-- The following values do not neee to be updated: 
+- The following values can be left as is: 
 ```
 function_app_default_node_version = "10.14.1"
 function_app_release_package_name_admin_api = "functionapp-admin-api.zip"
