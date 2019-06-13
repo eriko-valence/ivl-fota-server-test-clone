@@ -135,7 +135,7 @@ terraform apply -var-file="terraform.tfvars"
 	- Click 'Save'
 	- Note: The primary endpoint will be the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net/)
 - Deploy admin web ui to azure blob static website
-	- Update the following variables in 'iv_fota_server\admin_web_ui\.env.production': 
+	- Update the following variables in 'iv_fota_server\admin_web_ui\\.env.production': 
 		- VUE_APP_API_ENDPOINT_URL (i.e., admin api function app url)
 		- VUE_APP_AAD_CLIENT (i.e., aad web ui app id - e.g., app id for 'IVL_FOTA_Admin_Web_UI_DEV')
 		- VUE_APP_AAD_REDIRECT_URI (i.e., admin web ui url)
