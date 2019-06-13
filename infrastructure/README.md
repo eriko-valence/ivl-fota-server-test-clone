@@ -101,7 +101,7 @@ terraform apply -var-file="terraform.tfvars"
 	- Admin API
 		- Open Azure Active Directory in the azure portal
 		- Navigate to 'App Registration'
-		- Select the AD App representing the admin web ui (e.g., IVL_FOTA_Admin_API_DEV)
+		- Select the AD App representing the admin API (e.g., IVL_FOTA_Admin_API_DEV)
 		- Select 'Certificates & secrets'
 		- Select '+New client secret' button
 		- Type in a description (e.g, "azure_key_vault")
@@ -114,7 +114,7 @@ terraform apply -var-file="terraform.tfvars"
 	- Device API
 		- Open Azure Active Directory in the azure portal
 		- Navigate to 'App Registration'
-		- Select the AD App representing the admin web ui (e.g., IVL_FOTA_Device_API_DEV)
+		- Select the AD App representing the device API (e.g., IVL_FOTA_Device_API_DEV)
 		- Select 'Certificates & secrets'
 		- Select '+New client secret' button
 		- Type in a description (e.g, "azure_key_vault")
