@@ -15,15 +15,15 @@ $dir_to_exclude=@(".vscode")
 $function_release_container = "function-releases";
 
 #source code directories
-$source_code_dir_admin_api  = ".\admin_api";
-$source_code_dir_device_api = ".\device_api";
+$source_code_dir_admin_api  = "..\admin_api";
+$source_code_dir_device_api = "..\device_api";
 
 #package zip file names
 $package_file_name_admin_api = "functionapp-admin-api.zip";
 $package_file_name_device_api = "functionapp-device-api.zip";
 
 #package zip directory
-$package_zip_directory = ".\infrastructure\functionapp-releases\";
+$package_zip_directory = ".\functionapp-releases\";
 
 #package zip file paths
 $package_zip_file_path_admin_api = "$($package_zip_directory)\$($package_file_name_admin_api)"
