@@ -8,7 +8,7 @@ NOTE: Only needs to be done once on local deployment system
 - Clone repo
 
 ## Install package dependencies
-- In repo directory, navigate to 'admin_api' directory
+- In repo directory, navigate to 'admin_api' and 'device_api' directories
 - Run 'npm install'
 
 ## Manually create Azure storage account for storing Terraform state
