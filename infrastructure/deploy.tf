@@ -8,14 +8,6 @@ terraform {
   }
 }
 
-variable "env_prefix_lower" {
-  default = "dev"
-}
-
-variable "env_prefix_upper" {
-  default = "DEV"
-}
-
 variable "location" {
   default = "westus"
 }
@@ -25,43 +17,33 @@ variable "base_name" {
 }
 
 variable "aad_admin_web_ui_app_name" {
-  default = ""
 }
 
 variable "aad_admin_rest_api_app_name" {
-  default = ""
 }
 
 variable "aad_device_rest_api_app_name" {
-  default = ""
 }
 
 variable "aad_tenant_id" {
-  default = ""
 }
 
 variable "azure_storage_blob_name_prefix_firmware_binaries" {
-  default = ""
 }
 
 variable "function_app_release_package_name_admin_api" {
-  default = ""
 }
 
 variable "function_app_release_package_name_device_api" {
-  default = ""
 }
 
 variable "azure_storage_blob_container_name_function_app_releases" {
-  default = ""
 }
 
 variable "azure_storage_blob_container_name_firmware_binaries" {
-  default = ""
 }
 
 variable "function_app_default_node_version" {
-  default = "10.14.1"
 }
 
 data "azurerm_subscription" "current" {
@@ -153,12 +135,12 @@ resource "azurerm_storage_blob" "sb-functionapp-device-api" {
 }
 
 resource "azurerm_resource_group" "rg-infrastructure" {
-  name     = "rg-${var.base_name}-${var.env_prefix_lower}"
+  name     = "rg-${var.base_name}-${lower(terraform.workspace)}"
   location = var.location
 }
 
 resource "azurerm_storage_account" "sa-infrastructure" {
-  name                     = "sa${var.base_name}${var.env_prefix_lower}"
+  name                     = "sa${var.base_name}${lower(terraform.workspace)}"
   resource_group_name      = azurerm_resource_group.rg-infrastructure.name
   location                 = azurerm_resource_group.rg-infrastructure.location
   account_tier             = "Standard"
@@ -167,7 +149,7 @@ resource "azurerm_storage_account" "sa-infrastructure" {
 }
 
 resource "azurerm_app_service_plan" "sp-infrastructure" {
-  name                = "sp-${var.base_name}-${var.env_prefix_lower}"
+  name                = "sp-${var.base_name}-${lower(terraform.workspace)}"
   resource_group_name = azurerm_resource_group.rg-infrastructure.name
   location            = azurerm_resource_group.rg-infrastructure.location
   kind                = "FunctionApp"
@@ -220,14 +202,14 @@ data "azurerm_storage_account_sas" "sas-infrastructure" {
 }
 
 resource "azurerm_application_insights" "ai-infrastructure" {
-  name                = "ai-${var.base_name}-${var.env_prefix_lower}"
+  name                = "ai-${var.base_name}-${lower(terraform.workspace)}"
   resource_group_name = azurerm_resource_group.rg-infrastructure.name
   location            = azurerm_resource_group.rg-infrastructure.location
   application_type    = "Web"
 }
 
 resource "azurerm_function_app" "fa-device-api" {
-  name                      = "fa-${var.base_name}-device-api-${var.env_prefix_lower}"
+  name                      = "ivlapidevice-${lower(terraform.workspace)}"
   version                   = "~2"
   location                  = azurerm_resource_group.rg-infrastructure.location
   resource_group_name       = azurerm_resource_group.rg-infrastructure.name
@@ -245,7 +227,7 @@ resource "azurerm_function_app" "fa-device-api" {
     AzureBlobEndpoint              = azurerm_storage_account.sa-infrastructure.primary_blob_endpoint
     AzureBlobStorageDevice         = azurerm_storage_account.sa-infrastructure.primary_connection_string
     AzureKeyVaultName              = azurerm_key_vault.kv-infrastructure.name
-    AzureFunctionAppHostName       = "fa-${var.base_name}-device-api-${var.env_prefix_lower}.azurewebsites.net"
+    AzureFunctionAppHostName       = "ivlapidevice-${lower(terraform.workspace)}.azurewebsites.net"
     WEBSITE_NODE_DEFAULT_VERSION   = var.function_app_default_node_version
   }
   site_config {
@@ -255,7 +237,7 @@ resource "azurerm_function_app" "fa-device-api" {
 }
 
 resource "azurerm_function_app" "fa-admin-api" {
-  name                      = "fa-${var.base_name}-admin-api-${var.env_prefix_lower}"
+  name                      = "fa-${var.base_name}-admin-api-${lower(terraform.workspace)}"
   version                   = "~2"
   location                  = azurerm_resource_group.rg-infrastructure.location
   resource_group_name       = azurerm_resource_group.rg-infrastructure.name
@@ -273,7 +255,7 @@ resource "azurerm_function_app" "fa-admin-api" {
     AzureBlobEndpoint              = azurerm_storage_account.sa-infrastructure.primary_blob_endpoint
     AzureBlobStorageDevice         = azurerm_storage_account.sa-infrastructure.primary_connection_string
     AzureKeyVaultName              = azurerm_key_vault.kv-infrastructure.name
-    AzureFunctionAppHostName       = "fa-${var.base_name}-admin-api-${var.env_prefix_lower}.azurewebsites.net"
+    AzureFunctionAppHostName       = "fa-${var.base_name}-admin-api-${lower(terraform.workspace)}.azurewebsites.net"
     WEBSITE_NODE_DEFAULT_VERSION   = var.function_app_default_node_version
   }
   site_config {
@@ -283,7 +265,7 @@ resource "azurerm_function_app" "fa-admin-api" {
 }
 
 resource "azurerm_key_vault" "kv-infrastructure" {
-  name                        = "kv-${var.base_name}-${var.env_prefix_lower}"
+  name                        = "kv-${var.base_name}-${lower(terraform.workspace)}"
   location                    = azurerm_resource_group.rg-infrastructure.location
   resource_group_name         = azurerm_resource_group.rg-infrastructure.name
   enabled_for_disk_encryption = true
@@ -294,7 +276,7 @@ resource "azurerm_key_vault" "kv-infrastructure" {
   }
 
   tags = {
-    environment = var.env_prefix_lower
+    environment = lower(terraform.workspace)
   }
 }
 
@@ -335,7 +317,7 @@ provider "azuread" {
 
 # Create an application
 resource "azuread_application" "aadapp-admin-web-ui" {
-  name                       = "${var.aad_admin_web_ui_app_name}_${var.env_prefix_upper}"
+  name                       = "${var.aad_admin_web_ui_app_name}_${upper(terraform.workspace)}"
   reply_urls                 = ["http://localhost:8080"]
   available_to_other_tenants = false
   oauth2_allow_implicit_flow = true
@@ -343,13 +325,13 @@ resource "azuread_application" "aadapp-admin-web-ui" {
 
 # Create an application
 resource "azuread_application" "aadapp-admin-api" {
-  name            = "${var.aad_admin_rest_api_app_name}_${var.env_prefix_upper}"
-  identifier_uris = ["https://fa-${var.base_name}-admin-api-${var.env_prefix_lower}.azurewebsites.net"]
+  name            = "${var.aad_admin_rest_api_app_name}_${upper(terraform.workspace)}"
+  identifier_uris = ["https://fa-${var.base_name}-admin-api-${lower(terraform.workspace)}.azurewebsites.net"]
 }
 
 # Create an application
 resource "azuread_application" "aadapp-device-api" {
-  name = "${var.aad_device_rest_api_app_name}_${var.env_prefix_upper}"
+  name = "${var.aad_device_rest_api_app_name}_${upper(terraform.workspace)}"
 }
 
 # Create a service principal
