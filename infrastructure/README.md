@@ -4,6 +4,12 @@
 NOTE: Only needs to be done once on local deployment system
 - Install Azure CLI
 - Install Terraform
+- Install node
+- Clone repo
+
+## Install package dependencies
+- In repo directory, navigate to 'admin_api' and 'device_api' directories
+- Run 'npm install'
 
 ## Manually create Azure storage account for storing Terraform state
 NOTE: This only needs to be done once per Azure subscription
@@ -41,11 +47,6 @@ aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
 ```
 
 ## Prepare Terraform variables (set in terraform.tfvars file)
-- The following values are to used to name azure resources (e.g., rg-ivlfota-dev) and MUST NOT be shared with other environments
-```
-env_prefix_lower = "dev"
-env_prefix_upper = "DEV"
-```
 - The following values can be customized based on preference:
 ```
 base_name = "ivlfota"
@@ -68,6 +69,12 @@ azure_storage_blob_container_name_firmware_binaries = "fota"
 azure_storage_blob_name_prefix_firmware_binaries = "bin/"
 ```
 
+## Initialize Terraform
+This will set up the Terraform state to be resident on Azure and initialize providers.
+```
+terraform init
+```
+
 ## Setup Terraform workspace
 - Create a new workspace if you don't yet have one for the environment (e.g., dev) you will be deploying. For example: 
 ```
@@ -84,7 +91,6 @@ terraform workspace list
 
 ## Deploy Azure infrastructure using Terraform
 ```
-terraform init
 terraform apply -var-file="terraform.tfvars"
 ```
 
@@ -101,7 +107,7 @@ terraform apply -var-file="terraform.tfvars"
 	- Admin API
 		- Open Azure Active Directory in the azure portal
 		- Navigate to 'App Registration'
-		- Select the AD App representing the admin web ui (e.g., IVL_FOTA_Admin_API_DEV)
+		- Select the AD App representing the admin API (e.g., IVL_FOTA_Admin_API_DEV)
 		- Select 'Certificates & secrets'
 		- Select '+New client secret' button
 		- Type in a description (e.g, "azure_key_vault")
@@ -114,7 +120,7 @@ terraform apply -var-file="terraform.tfvars"
 	- Device API
 		- Open Azure Active Directory in the azure portal
 		- Navigate to 'App Registration'
-		- Select the AD App representing the admin web ui (e.g., IVL_FOTA_Device_API_DEV)
+		- Select the AD App representing the device API (e.g., IVL_FOTA_Device_API_DEV)
 		- Select 'Certificates & secrets'
 		- Select '+New client secret' button
 		- Type in a description (e.g, "azure_key_vault")
@@ -130,19 +136,27 @@ terraform apply -var-file="terraform.tfvars"
 	- Note: Azure storage static website configuration is supported using the Blob Service REST API
 		- https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-service-properties#request
 	- Open the azure storage account in the azure portal (e.g., saivlfotadev)
-	- Set static website to 'Enabled'
+	- Select 'static website' and set static website to 'Enabled'
 	- Add 'index.html' to to index and error document paths
 	- Click 'Save'
-	- Note: The primary endpoint will be the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net/)
+	- Note: The primary endpoint will be the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net)
+- Enable CORS (Azure Storage)
+	- Open the azure storage account in the azure portal (e.g., saivlfotadev)
+	- Select 'CORS' and configure as follows:
+		- Allowed origins: This is the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net)
+		- Allowed Methods: PUT
+		- Allowed Headers: *
+		- Exposed Header: *
+		- Max Age: 0
 - Deploy admin web ui to azure blob static website
-	- Update the following variables in 'iv_fota_server\admin_web_ui\.env.production': 
+	- Update the following variables in 'iv_fota_server\admin_web_ui\\.env.production': 
 		- VUE_APP_API_ENDPOINT_URL (i.e., admin api function app url)
 		- VUE_APP_AAD_CLIENT (i.e., aad web ui app id - e.g., app id for 'IVL_FOTA_Admin_Web_UI_DEV')
 		- VUE_APP_AAD_REDIRECT_URI (i.e., admin web ui url)
 	- Change the directory to 'iv_fota_server\admin_web_ui' and run the command `npm run build`
 	- Upload all contents in 'iv_fota_server\admin_web_ui\dist' to azure storage blob container $web
 		- Change to the directory 'iv_fota_server\admin_web_ui\dist'
-		- Run this command: `blob upload-batch --account-name {storage_acct_name} --destination '$web' --source ./`
+		- Run this command: `az storage blob upload-batch --account-name {storage_acct_name} --destination '$web' --source ./`
 - Enable AAD auth on admin function app (Function App)
 	- Note: Terraform does not currently support Function app AAD auth configuration 
 		- https://github.com/terraform-providers/terraform-provider-azurerm/issues/1992
@@ -158,13 +172,15 @@ terraform apply -var-file="terraform.tfvars"
 	- Click OK after selecting this AD App
 	- Click 'Save'
 	- Select 'Azure Active Directory Configured (Express : Existing App)' under Authentication Providers
+	- Click 'Advanced'
 	- Add the admin api function app URL to the 'Allowed Tokens Audience' list
 		- Example: https://fa-ivlfota-admin-api-dev.azurewebsites.net
+	- Click 'OK'
 	- Click 'Save'
 - Configure CORS on admin function app (Function App)
 	- Open the admin api function app in the azure portal (e.g., fa-ivlfota-admin-api-dev)
 	- Navigate to Platform Features and select 'CORS'
-	- Add the admin web ui primary endpoint (e.g., https://saivlfotadev.z22.web.core.windows.net/)
+	- Add the admin web ui primary endpoint (e.g., https://saivlfotadev.z22.web.core.windows.net)
 	- Click 'Save'
 - Configure admin web ui AAD app (Azure Active Directory)
 	- Open Azure Active Directory in the azure portal
@@ -201,9 +217,11 @@ terraform apply -var-file="terraform.tfvars"
 	- Navigate to 'Enterprise applications'
 	- Select the admin api AAD app (e.g., IVL_FOTA_Admin_API_DEV)
 	- Select 'Properties'
-	- Set 'User assignment required?' to 'Enabled'
+	- Set 'User assignment required?' to 'Yes'
+	- Click 'Save'
 	- Select 'Users and groups'
 	- Add your list of authorized admin web ui users here
+	- Click 'Save'
 - Setup cname record for mf2fota-dev.2to8.cc
 - Configure SSL certificate
 		
