@@ -38,7 +38,7 @@ az storage blob upload --account-name $azure_storage_account_name -f $package_zi
 az storage blob upload --account-name $azure_storage_account_name -f $package_zip_file_path_device_api -c $function_release_container -n $package_file_name_device_api 2> $null
 
 $blob_sas_full_uri_admin_api = $(az storage blob generate-sas --account-name $azure_storage_account_name --container-name $function_release_container --name $package_file_name_admin_api --permissions r --expiry $sas_expiration --full-uri)
-$blob_sas_full_uri_device_api = $(az storage blob generate-sas --account-name $azure_storage_account_name --container-name $function_release_container --name $package_file_name_device_api --full-uri)
+$blob_sas_full_uri_device_api = $(az storage blob generate-sas --account-name $azure_storage_account_name --container-name $function_release_container --name $package_file_name_device_api --permissions r --expiry $sas_expiration --full-uri)
 
 # update the app settings
 az functionapp config appsettings set --name $azure_function_admin_api_name --resource-group $azure_resource_group_name --settings "WEBSITE_RUN_FROM_PACKAGE=$blob_sas_full_uri_admin_api"
