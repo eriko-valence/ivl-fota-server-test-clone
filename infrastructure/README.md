@@ -139,11 +139,11 @@ terraform apply -var-file="terraform.tfvars"
 	- Select 'static website' and set static website to 'Enabled'
 	- Add 'index.html' to to index and error document paths
 	- Click 'Save'
-	- Note: The primary endpoint will be the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net/)
+	- Note: The primary endpoint will be the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net)
 - Enable CORS (Azure Storage)
 	- Open the azure storage account in the azure portal (e.g., saivlfotadev)
 	- Select 'CORS' and configure as follows:
-		- Allowed origins: This is the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net/)
+		- Allowed origins: This is the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net)
 		- Allowed Methods: PUT
 		- Allowed Headers: *
 		- Exposed Header: *
