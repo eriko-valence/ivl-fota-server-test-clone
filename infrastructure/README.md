@@ -136,10 +136,18 @@ terraform apply -var-file="terraform.tfvars"
 	- Note: Azure storage static website configuration is supported using the Blob Service REST API
 		- https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-service-properties#request
 	- Open the azure storage account in the azure portal (e.g., saivlfotadev)
-	- Set static website to 'Enabled'
+	- Select 'static website' and set static website to 'Enabled'
 	- Add 'index.html' to to index and error document paths
 	- Click 'Save'
 	- Note: The primary endpoint will be the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net/)
+- Enable CORS (Azure Storage)
+	- Open the azure storage account in the azure portal (e.g., saivlfotadev)
+	- Select 'CORS' and configure as follows:
+		- Allowed origins: This is the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net/)
+		- Allowed Methods: PUT
+		- Allowed Headers: *
+		- Exposed Header: *
+		- Max Age: 0
 - Deploy admin web ui to azure blob static website
 	- Update the following variables in 'iv_fota_server\admin_web_ui\\.env.production': 
 		- VUE_APP_API_ENDPOINT_URL (i.e., admin api function app url)
