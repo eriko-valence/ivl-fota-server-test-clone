@@ -267,6 +267,7 @@ export
                 for (var i = 0; i < arrayLength; i++) {
                     this.ddFirmware.push({ text: response.data[i]['version'], value: response.data[i]['firmware_id'] });
                 }
+                this.ddFirmware = _.orderBy(this.ddFirmware, ['text'], ['asc']);
               }).catch(function (error) {
                 console.log(`error: ${error}`); // eslint-disable-line
               });
