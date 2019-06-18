@@ -1,4 +1,5 @@
 import AuthenticationContext from 'adal-angular/lib/adal.js'
+import {AppInsights} from "applicationinsights-js"
 
 const config = {
   tenant: process.env.VUE_APP_AAD_TENANT || '',
@@ -8,6 +9,9 @@ const config = {
   resourceApi: process.env.VUE_APP_API_ENDPOINT_URL || ''
 };
 
+/* Call downloadAndSetup to download full ApplicationInsights script from CDN and initialize it with instrumentation key */
+AppInsights.downloadAndSetup({ instrumentationKey: process.env.APPINSIGHTS_INSTRUMENTATIONKEY });
+
 export default {
   authenticationContext: null,
   /**
@@ -15,7 +19,6 @@ export default {
    */
   initialize() {
     console.log('authentication.js -> START');
-
 
     this.authenticationContext = new AuthenticationContext(config);
 
@@ -39,22 +42,34 @@ export default {
            This method must be called for processing the response received from AAD. 
            It extracts the hash, processes the token or error, saves it in the cache and calls the registered callbacks with the result.
         */
+       AppInsights.trackEvent("authentication.initialize.tokens.found.url.fragments", null);
         this.authenticationContext.handleWindowCallback();
       } else {
         console.log('authentication.js -> Promise() -> try to pull user out of local storage');
         // try pull the user out of local storage
         let user = this.authenticationContext.getCachedUser();
+        AppInsights.trackEvent("authentication.initialize.lookup.user.local.storage", null);
 
         if (user) {
           console.log('authentication.js -> Promise() -> cached user found');
           console.log(user);
             this.acquireToken().then(() => { 
               console.log('authentication.js -> Promise() -> cached user found -> token acquired -> resolve()');
+              AppInsights.trackEvent("authentication.initialize.lookup.user.local.storage.found", null);
                 resolve(); //successful authentication & authorization
             }).catch((error) => {
+              AppInsights.trackEvent("authentication.initialize.lookup.user.local.storage.error", null);
+              if (error) {
+                AppInsights.trackEvent("UserAcquireTokenError", error);
+                AppInsights.trackException(error, 'notused', { 'step': 'authentication.initialize.lookup.user.local.storage.error' });
+              } else {
+                AppInsights.trackEvent("UserAcquireTokenError", '');
+                AppInsights.trackException(new Error('unknown error'), 'notused', { 'step': 'authentication.initialize.lookup.user.local.storage.error' });
+              }
               console.log(error);
               console.log('authentication.js -> Promise() -> cached user found -> unable to acquire token -> initiate force sign out process');
-              this.signOut();
+              //this.signOut();
+              this.signIn();
             }
             )
         } else {
@@ -107,6 +122,13 @@ export default {
         console.log('getAccessToken() => new token acquired...return it to requester');
         resolve(token);
       }).catch((error) => {
+        if (error) {
+          AppInsights.trackEvent("getAccessTokenError", error);
+          AppInsights.trackException(error, 'notused', { 'step': 'authentication.getaccesstoken.error' });
+        } else {
+          AppInsights.trackEvent("getAccessTokenError", '');
+          AppInsights.trackException(new Error('unknown error'), 'notused', { 'step': 'authentication.getaccesstoken.error' });
+        }
         console.log('getAccessToken() => failed to acquire a new token');
         reject(error);
       });
@@ -123,6 +145,7 @@ export default {
     this.authenticationContext.login();
   },
   signOut() {
+    AppInsights.trackEvent("signOutEvent", null);
     this.authenticationContext.logOut();
   }
 }

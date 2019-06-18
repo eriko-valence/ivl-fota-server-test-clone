@@ -32,5 +32,5 @@
   - Example: iv_fota_server\admin_web_ui\dist
 - Upload the code. For example:  
   ```
-  blob upload-batch --account-name ivladmindevelopment --account-key qjkObAyFda2d1+NWbgQdeFrxJeHALxucU3oBvg3rihq== --destination '$web' --source ./
+  az storage blob upload-batch --account-name ivladmindevelopment --account-key qjkObAyFda2d1+NWbgQdeFrxJeHALxucU3oBvg3rihq== --destination '$web' --source ./
   ```
