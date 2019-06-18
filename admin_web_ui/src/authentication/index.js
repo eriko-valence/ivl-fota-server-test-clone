@@ -68,7 +68,8 @@ export default {
               }
               console.log(error);
               console.log('authentication.js -> Promise() -> cached user found -> unable to acquire token -> initiate force sign out process');
-              this.signOut();
+              //this.signOut();
+              this.signIn();
             }
             )
         } else {
