@@ -10,7 +10,7 @@ const config = {
 };
 
 /* Call downloadAndSetup to download full ApplicationInsights script from CDN and initialize it with instrumentation key */
-AppInsights.downloadAndSetup({ instrumentationKey: "7c73a36d-8123-4abc-a807-017939c70a9c" });
+AppInsights.downloadAndSetup({ instrumentationKey: process.env.APPINSIGHTS_INSTRUMENTATIONKEY });
 
 export default {
   authenticationContext: null,
