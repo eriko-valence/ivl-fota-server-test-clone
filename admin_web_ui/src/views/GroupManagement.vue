@@ -68,6 +68,7 @@
 <script>
 import authentication from '../authentication';
 import shared from '../shared'
+import _ from 'lodash';
 export
   default {
     data() {
