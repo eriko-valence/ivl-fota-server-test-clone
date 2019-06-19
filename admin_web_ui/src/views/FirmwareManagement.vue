@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-table :busy="isLoading" striped hover :items="items" :fields="fields">
-      <div slot="table-busy" class="text-center text-danger my-2">
+      <div class="text-center text-danger my-2">
         <b-spinner class="align-middle" />
         <strong>Loading...</strong>
       </div>
@@ -190,7 +190,7 @@
                                     this.items = response.data;
                                 }).catch((error) => {
                                     this.toggleLoading(false);
-                                    if (error.toString().includes("404")) {
+                                    if (error.toString().includes('404')) {
                                         this.items = [];
                                     }
                                     shared.trackException(error, 'firmwaremanagement.getfirmware.axios.error');
@@ -228,7 +228,7 @@
                         ServiceURL,
                         BlockBlobURL,
                         Aborter
-                    } = require("@azure/storage-blob");
+                    } = require('@azure/storage-blob');
                     const anonymousCredential = new AnonymousCredential();
                     const pipeline = StorageURL.newPipeline(anonymousCredential);
                     const serviceURL = new ServiceURL(
