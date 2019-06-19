@@ -1,7 +1,10 @@
 import _ from 'lodash'
+import {AppInsights} from 'applicationinsights-js'
+
+/* Call downloadAndSetup to download full ApplicationInsights script from CDN and initialize it with instrumentation key */
+AppInsights.downloadAndSetup({ instrumentationKey: process.env.VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY });
 
 export default {
-  
   getObjectKey(object, key) {
     return _.get(object, key, '');
   },
@@ -14,5 +17,12 @@ export default {
     let msg = _.get(error, 'response.data.error', null);
     if (msg === null) { msg = error}
     return msg;
+  },
+  trackException(error, source) {
+    if (error) {
+      AppInsights.trackException(error, 'notused', { 'source': source });
+    } else {
+      AppInsights.trackException(new Error('unknown error'), 'notused', { 'step': source });
+    }
   }
 }

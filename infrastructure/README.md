@@ -153,6 +153,7 @@ terraform apply -var-file="terraform.tfvars"
 		- VUE_APP_API_ENDPOINT_URL (i.e., admin api function app url)
 		- VUE_APP_AAD_CLIENT (i.e., aad web ui app id - e.g., app id for 'IVL_FOTA_Admin_Web_UI_DEV')
 		- VUE_APP_AAD_REDIRECT_URI (i.e., admin web ui url)
+		- VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY
 	- Change the directory to 'iv_fota_server\admin_web_ui' and run the command `npm run build`
 	- Upload all contents in 'iv_fota_server\admin_web_ui\dist' to azure storage blob container $web
 		- Change to the directory 'iv_fota_server\admin_web_ui\dist'
