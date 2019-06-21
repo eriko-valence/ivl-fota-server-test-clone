@@ -42,7 +42,7 @@
 <script>
     import authentication from '../authentication'
     export default {
-        name: 'app',
+        name: 'App',
         data () {
             return {
                 msg: 'Signing in...',
