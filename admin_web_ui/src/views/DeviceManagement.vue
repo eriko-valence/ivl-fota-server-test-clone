@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-table :busy="isLoading" striped hover :items="allDevices" :fields="fields">
+    <b-table :busy="isLoading" striped hover :items="allDevices" :fields="fields" head-variant="light">
       <div class="text-center text-danger my-2">
         <b-spinner class="align-middle" />
         <strong>Loading...</strong>
@@ -46,7 +46,7 @@
                         { key: 'deviceid', label: 'Fridge ID', sortable: true, sortDirection: 'desc' },
                         { key: 'ShortSN', label: 'Short SN', sortable: true, sortDirection: 'desc' },
                         { key: 'MFID', label: 'MF', sortable: true, sortDirection: 'desc' },
-                        { key: 'group', label: 'Group', sortable: true,},
+                        { key: 'group', label: 'Group', sortable: true },
                         { key: 'desired_fw', label: 'Desired FW Version', sortable: true, class: 'text-center' },
                         { key: 'reported_fw', label: 'Reported FW Version', sortable: true, class: 'text-center' },
                         { key: 'last_reported', label: 'Last Report Date', sortable: true, class: 'text-center' }
