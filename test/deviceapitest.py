@@ -9,11 +9,15 @@ import logging
 from multiprocessing import Process
 
 # Main endpoint for the FOTA API
-WEBAPI_ENDPOINT='mf2fota-dev.2to8.cc'
+#WEBAPI_ENDPOINT='mf2fota-dev.2to8.cc'
+WEBAPI_ENDPOINT='ivlapidevice-dev.azurewebsites.net'
+#WEBAPI_ENDPOINT='fa-ivlfota-device-api-matt.azurewebsites.net'
 
 # Key to use as API Key.  This is essentially a shared password for the application to gain access to the FOTA API
 # It will be passed into the API via a request header "x-functions-key"
-WEBAPI_KEY = '10yE5/4TJ3cN9XhOXdSIPg2OVBDZ/dVuH/0DCzi4x1UFx6mHXV7uAw=='
+#WEBAPI_KEY = '10yE5/4TJ3cN9XhOXdSIPg2OVBDZ/dVuH/0DCzi4x1UFx6mHXV7uAw=='
+#WEBAPI_KEY = '9K95QlYCX7HnSNgoTZlWPv0chCMf0DYqJ04SINqtE5QqNV0v9lUpag=='
+WEBAPI_KEY = '7mp9jx2T1kcemowavLifuqL6PJarkDVPlptSFHaMHdgUV7fxG7PccA=='
 
 # What FridgeID are we going to pretend to be? 999 is the Fridge devoted to the test script.
 FRIDGE_ID='999'
@@ -54,11 +58,20 @@ def get_manifest(fridge_id=None, fridge_fw_ver=None, api_key=WEBAPI_KEY):
 
     logger.debug('Request headers: {}'.format(str(headers)))
 
-    # hit device API
-    if headers is not None:
-        response = requests.get(api_endpoint, timeout=DOWNLOAD_TIMEOUT, headers=headers)
-    else:
-        response = requests.get(api_endpoint, timeout=DOWNLOAD_TIMEOUT)
+    current_ms = int(round(time.time() * 1000))
+
+    try:
+        # hit device API
+        if headers is not None:
+            response = requests.get(api_endpoint, timeout=DOWNLOAD_TIMEOUT, headers=headers)
+        else:
+            response = requests.get(api_endpoint, timeout=DOWNLOAD_TIMEOUT)
+
+    except (requests.exceptions.Timeout, requests.packages.urllib3.exceptions.ReadTimeoutError):
+        logger.error('FAIL - API timeout')
+        return None, None
+
+    final_ms = int(round(time.time() * 1000))
 
     # check we got some kind of response - we always want something!
     if response is None or response.headers is None:
@@ -77,6 +90,8 @@ def get_manifest(fridge_id=None, fridge_fw_ver=None, api_key=WEBAPI_KEY):
     if response.text is not None and response.text != '':
         response_text = response.text
         logger.debug("Response content: {}".format(response_text))
+
+    logger.debug("API call took {} ms".format(final_ms - current_ms))
 
     return response.status_code, response_text
 
@@ -282,7 +297,7 @@ def test_incorrect_api_key():
     else:
         logger.error('FAIL - Received {} response from the server but was expecting {}'.format(status_code, expected))
 
-def test_load():
+def test_load_includingblob():
     logger.info('--------------------------')    
     logger.info('LOAD TESTING API with {} concurrent manifest checks and downloads'.format(CONCURRENT_CHECKS))
     process_list=[]
@@ -316,8 +331,27 @@ def test_load_api_only():
 
     logger.info('SUCCESS - load testing finished for {} API checks (no FW download)'.format(CONCURRENT_CHECKS_API_ONLY))
 
+def test_load_limit_api_only(amount):
+    logger.info('--------------------------')    
+    logger.info('LOAD TESTING API with {} concurrent manifest API checks'.format(amount))
+    process_list=[]
 
-def run_tests():
+    # start up a whole bunch of them over a one minute period
+    for x in range(amount):
+        p = Process(target=test_older_fw, args=(x,))
+        process_list.append(p)
+        p.start()
+        time.sleep(float(60)/amount)
+
+    # now wait for them all to finish
+    for p in process_list:
+        p.join()
+
+    logger.info('Load testing finished for {} API checks (no FW download)'.format(amount))
+
+
+def basic_tests():
+    logger.info('RUNNING BASIC FUNCTIONAL TESTS')
     test_same_fw()
     test_newer_fw()
     test_older_fw(0)
@@ -329,8 +363,15 @@ def run_tests():
     test_missing_api_key()
     test_incorrect_api_key()
     test_manifest_payload(0)
-    test_load()
+
+def load_tests():
+    logger.info('RUNNING LOAD TESTS')
+    test_load_includingblob()
     test_load_api_only()
+
+def load_limit_tests(amount):
+    logger.info('RUNNING LOAD LIMIT TESTS')
+    test_load_limit_api_only(amount)
 
 if __name__ == '__main__':
     logging.basicConfig(
@@ -346,4 +387,11 @@ if __name__ == '__main__':
     # This is for local logging - set to DEBUG to see more stuff
     logging.getLogger("__main__").setLevel(logging.DEBUG)
 
-    run_tests()
+    # basic tests or load tests?
+    if len(sys.argv) > 1 and sys.argv[1] == '-load':
+        load_tests()
+    elif len(sys.argv) > 2 and sys.argv[1] == '-loadlimit':
+        amount = int(sys.argv[2])
+        load_limit_tests(amount)
+    else:
+        basic_tests()
