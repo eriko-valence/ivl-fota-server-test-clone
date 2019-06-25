@@ -106,6 +106,7 @@ module.exports = function (context, req) {
         let sqlQuery = 'fota_uspGetDeviceFirmwareManifest';
         //represents an azure sql query request that can be executed on a connection
         request = new Request(sqlQuery, function(err) {
+            connection.close();
             if (err) {
                 console.log('LOAD;ERROR;Get firmware manifest from azure sql db;' + context.invocationId);
                 console.log('************************************************************************SQL Query Error')
