@@ -10,7 +10,7 @@ const models = require('../Shared/models');
 const errors = require('../Shared/errors');
 const appInsights = require("applicationinsights");
 
-module.exports = function (context, req) {
+module.exports = function (context, req) {    
     var start = new Date()
     console.log('LOAD;BEG;Invocation request received;' + context.invocationId);
     let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
@@ -49,52 +49,21 @@ module.exports = function (context, req) {
         let domain = _.get(process.env, 'AzureADTenantID');
         appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
         let client = appInsights.defaultClient;
-        console.log('LOAD;BEG;Get application token credentials object;' + context.invocationId);
-        msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
-            const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
-            var keyVaultname = _.get(process.env, 'AzureKeyVaultName', '');
-            var vaultUri = "https://" + keyVaultname + ".vault.azure.net/";
-            let var1 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginName", "");
-            let var2 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginPass", "");
-            let var3 = keyVaultClient.getSecret(vaultUri, "AzureBlobStorageConnectionString", "");
-            let var4 = keyVaultClient.getSecret(vaultUri, "AzureSqlDatabaseName", "");
-            let var5 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerName", "");
-            console.log('LOAD;END;Get application token credentials object;' + context.invocationId);
-            console.log('LOAD;BEG;Get azure key vault secrets;' + context.invocationId);
-            Promise.all([var1, var2, var3, var4, var5]).then(function(results) {
-                console.log('LOAD;END;Get azure key vault secrets;' + context.invocationId);
-                let azureSqlLoginName = _.get(results[0], 'value', '');
-                let azureSqlLoginPass = _.get(results[1], 'value', '');
-                let azureBlobStorageConnectionString = _.get(results[2], 'value', '');
-                let azureSqlDatabaseName = _.get(results[3], 'value', '');
-                let azureSqlServerName = _.get(results[4], 'value', '');
-                let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
-                var connection = new Connection(config);
-                console.log('LOAD;BEG;Get azure sql connection;' + context.invocationId);
-                connection.on('connect', function(err) {
-                    if (err) {
-                        console.log('LOAD;ERROR;Get azure sql connection;' + context.invocationId);
-                        console.log(err);
-                        let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
-                        client.trackException({exception: err.message, properties: props});
-                        error = true;
-                        context.res = {
-                            status: 500,             
-                            body: {
-                                code: 500,
-                                error: 'An error occured while retrieving the device manifest from the database.'
-                            }
-                        };
-                        context.done();
-                    } else {
-                        console.log('LOAD;END;Get azure sql connection;' + context.invocationId);
-                        getFirmwareManifest(azureBlobStorageConnectionString, connection);
-                    }
-                });
-            }).catch((err) => {
-                console.log('LOAD;ERROR;Get azure key vault secrets;' + context.invocationId);
-                console.log('************************************************************************KV Secret Lookup Error')
+
+        console.log('LOAD;BEG;Get azure key vault secrets (either from key vault or cache);' + context.invocationId);
+        helper.getAzureKeyVaultSecrets(context.invocationId).then((azureKeyVaultSecrets) => {
+            console.log('LOAD;END;Get azure key vault secrets (either from key vault or cache);' + context.invocationId);
+            let azureSqlLoginName = _.get(azureKeyVaultSecrets, 'AzureSqlServerLoginName', '');
+            let azureSqlLoginPass = _.get(azureKeyVaultSecrets, 'AzureSqlServerLoginPass', '');
+            let azureBlobStorageConnectionString = _.get(azureKeyVaultSecrets, 'AzureBlobStorageConnectionString', '');
+            let azureSqlDatabaseName = _.get(azureKeyVaultSecrets, 'AzureSqlDatabaseName', '');
+            let azureSqlServerName = _.get(azureKeyVaultSecrets, 'AzureSqlServerName', '');
+            let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
+            var connection = new Connection(config);
+            console.log('LOAD;BEG;Get azure sql connection;' + context.invocationId);
+            connection.on('connect', function(err) {
                 if (err) {
+                    console.log('LOAD;ERROR;Get azure sql connection;' + context.invocationId);
                     console.log(err);
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                     client.trackException({exception: err.message, properties: props});
@@ -107,26 +76,23 @@ module.exports = function (context, req) {
                         }
                     };
                     context.done();
+                } else {
+                    console.log('LOAD;END;Get azure sql connection;' + context.invocationId);
+                    getFirmwareManifest(azureBlobStorageConnectionString, connection);
                 }
-              });
-        }).catch((err) => {
-            console.log('LOAD;ERROR;Get application token credentials object;' + context.invocationId);
-            console.log('************************************************************************Svc Principal Login Error')
-            if (err) {
-                console.log(err);
-                let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
-                client.trackException({exception: err.message, properties: props});
-                error = true;
-                context.res = {
-                    status: 500,             
-                    body: {
-                        code: 500,
-                        error: 'An error occured while retrieving the device manifest from the database.'
-                    }
-                };
-                context.done();
-            }
-          });
+            });
+        }).catch((error) => {
+            console.log('-------------------------------------------------------------------------');
+            console.log('LOAD;END;Get azure sql connection;' + context.invocationId);
+            console.log(error);
+            console.log('-------------------------------------------------------------------------');
+        });
+
+
+
+
+
+
     }
 
     /*
