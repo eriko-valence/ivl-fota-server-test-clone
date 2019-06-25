@@ -13,11 +13,18 @@ var azureKeyVaultSecrets = {
     AzureSqlServerName: undefined
 };
 
+// cache for the secrets from azure key vault for this period of time
+var cacheExpiration = 300000;
+var timeToLive = undefined;
+
 module.exports = {
     getAzureKeyVaultSecrets(invocationId) {
         return new Promise(function(resolve, reject) {
+            if (timeToLive === undefined) {
+                timeToLive = new Date();
+            }
             // only go out to azure key vault if the secrets are not cached
-            if (!_.values(azureKeyVaultSecrets).some(x => x !== undefined)) {
+            if ((!_.values(azureKeyVaultSecrets).some(x => x !== undefined)) || module.exports.isExpired(timeToLive, invocationId) ) {
                 let secret = _.get(process.env, 'AzureADClientSecret', '');
                 let clientId = _.get(process.env, 'AzureADClientID', '');
                 let domain = _.get(process.env, 'AzureADTenantID');
@@ -69,6 +76,22 @@ module.exports = {
                 resolve(azureKeyVaultSecrets);
             }
         })
+},
+
+isExpired: function (t, invocationId) {
+    var duration = new Date() - t;
+    console.log('duration: ' + duration);
+    console.log('LOAD;BEG;Check cache TTL;' + invocationId);
+    if (duration >= cacheExpiration) {
+        console.log('LOAD;END;Check cache TTL - refresh secrets cache from azure key vault instance;' + invocationId);
+        console.log('timeToLive (before): ' + timeToLive);
+        timeToLive = new Date();
+        console.log('timeToLive (after): ' + timeToLive);
+        return true;
+    } else {
+        console.log('LOAD;END;Check cache TTL - pull secrets from azure key vault cache;' + invocationId);
+        return false;
+    }
 },
     
     getConfig: function(login, pass, svrname, dbname) {
