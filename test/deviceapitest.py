@@ -124,6 +124,7 @@ def test_older_fw(index):
     logger.info('--------------------------')    
     logger.info('TEST Index {} - TESTING OLDER VERSION OF FIRMWARE LOCALLY AS DESIRED ON SERVER'.format(index))
     expected = 200
+
     status_code, manifest = get_manifest(fridge_id=FRIDGE_ID, fridge_fw_ver=OLDER_FW)
 
     # did we get the right status code?
@@ -141,7 +142,7 @@ def test_older_fw(index):
 
     except:
         logger.error('FAIL - could not parse response from server as JSON')
-        return FALSE
+        return False
 
     # everything we expect in the manifest?
     for key in ['version', 'signature', 'uri', 'md5']:
@@ -331,23 +332,33 @@ def test_load_api_only():
 
     logger.info('SUCCESS - load testing finished for {} API checks (no FW download)'.format(CONCURRENT_CHECKS_API_ONLY))
 
-def test_load_limit_api_only(amount):
+def test_load_limit_api_only(amount, time_period):
     logger.info('--------------------------')    
-    logger.info('LOAD TESTING API with {} concurrent manifest API checks'.format(amount))
+    logger.info('LOAD TESTING API with {} concurrent manifest API checks over {} seconds'.format(amount, time_period))
     process_list=[]
 
     # start up a whole bunch of them over a one minute period
     for x in range(amount):
-        p = Process(target=test_older_fw, args=(x,))
+        p = Process(target=test_older_fw, args=(x, ))
         process_list.append(p)
         p.start()
-        time.sleep(float(60)/amount)
+        time.sleep(float(time_period)/amount)
+        # go through the list of processes we currently have going and see which ones are finished
+        new_process_list = []
+        for p in process_list:
+            if not p.is_alive():
+                p.join()
+                logger.info('JOINED WITH PROCESS')
+            else:
+                new_process_list.append(p)
+        process_list = new_process_list
 
     # now wait for them all to finish
     for p in process_list:
         p.join()
+        logger.info('JOINED WITH PROCESS AT END')
 
-    logger.info('Load testing finished for {} API checks (no FW download)'.format(amount))
+    logger.info('Load testing finished for {} API checks (no FW download) over {} seconds'.format(amount, time_period))
 
 
 def basic_tests():
@@ -369,9 +380,9 @@ def load_tests():
     test_load_includingblob()
     test_load_api_only()
 
-def load_limit_tests(amount):
+def load_limit_tests(amount, time_period):
     logger.info('RUNNING LOAD LIMIT TESTS')
-    test_load_limit_api_only(amount)
+    test_load_limit_api_only(amount, time_period)
 
 if __name__ == '__main__':
     logging.basicConfig(
@@ -390,8 +401,9 @@ if __name__ == '__main__':
     # basic tests or load tests?
     if len(sys.argv) > 1 and sys.argv[1] == '-load':
         load_tests()
-    elif len(sys.argv) > 2 and sys.argv[1] == '-loadlimit':
+    elif len(sys.argv) > 3 and sys.argv[1] == '-loadlimit':
         amount = int(sys.argv[2])
-        load_limit_tests(amount)
+        time_period = int(sys.argv[3])
+        load_limit_tests(amount, time_period)
     else:
         basic_tests()
