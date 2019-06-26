@@ -1,7 +1,100 @@
 var _ = require('lodash');
 var azure = require('azure-storage');
+const msRestAzure = require('ms-rest-azure');
+const appInsights = require("applicationinsights");
+const KeyVault = require('azure-keyvault');
+const errors = require('../Shared/errors');
+
+// secrets to pull from azure key vault
+var azureKeyVaultSecrets = {
+    AzureSqlServerLoginName: undefined,
+    AzureSqlServerLoginPass: undefined,
+    AzureBlobStorageConnectionString: undefined,
+    AzureSqlDatabaseName: undefined,
+    AzureSqlServerName: undefined
+};
+
+// cache for the secrets from azure key vault for this period of time
+var cacheExpiration = 300000;
+var timeToLive = undefined;
 
 module.exports = {
+    getAzureKeyVaultSecrets(invocationId, req) {
+        return new Promise(function(resolve, reject) {
+            if (timeToLive === undefined) {
+                timeToLive = new Date();
+            }
+            // only go out to azure key vault if the secrets are not cached
+            if ((!_.values(azureKeyVaultSecrets).some(x => x !== undefined)) || module.exports.isExpired(timeToLive, invocationId) ) {
+                let secret = _.get(process.env, 'AzureADClientSecret', '');
+                let clientId = _.get(process.env, 'AzureADClientID', '');
+                let domain = _.get(process.env, 'AzureADTenantID');
+                appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
+                let client = appInsights.defaultClient;
+                console.log('LOAD;BEG;Get azure ad application token credentials;' + invocationId);
+                msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
+                    console.log('LOAD;END;Get azure ad application token credentials;' + invocationId);
+                    const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
+                    var keyVaultname = _.get(process.env, 'AzureKeyVaultName', '');
+                    var vaultUri = "https://" + keyVaultname + ".vault.azure.net/";
+                    let var1 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginName", "");
+                    let var2 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerLoginPass", "");
+                    let var3 = keyVaultClient.getSecret(vaultUri, "AzureBlobStorageConnectionString", "");
+                    let var4 = keyVaultClient.getSecret(vaultUri, "AzureSqlDatabaseName", "");
+                    let var5 = keyVaultClient.getSecret(vaultUri, "AzureSqlServerName", "");
+                    console.log('LOAD;BEG;Get azure key vault secrets from azure key vault;' + invocationId);
+                    Promise.all([var1, var2, var3, var4, var5]).then(function(results) {
+                        azureKeyVaultSecrets.AzureSqlServerLoginName = _.get(results[0], 'value', '');
+                        azureKeyVaultSecrets.AzureSqlServerLoginPass = _.get(results[1], 'value', '');
+                        azureKeyVaultSecrets.AzureBlobStorageConnectionString = _.get(results[2], 'value', '');
+                        azureKeyVaultSecrets.AzureSqlDatabaseName = _.get(results[3], 'value', '');
+                        azureKeyVaultSecrets.AzureSqlServerName = _.get(results[4], 'value', '');
+                        console.log('LOAD;END;Get azure key vault secrets from azure key vault;' + invocationId);
+                        resolve(azureKeyVaultSecrets);
+                    }).catch((err) => {
+                        console.log('LOAD;ERR;Get azure key vault secrets from azure key vault;' + invocationId);
+                        if (err) {
+                            console.log(err);
+                            let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                            client.trackException({exception: err.message, properties: props});
+                            reject(err);
+                        }
+                    });
+                }).catch((err) => {
+                    console.log('LOAD;ERR;Get azure ad application token credentials;' + invocationId);
+                    if (err) {
+                        console.log(err);
+                        let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
+                        client.trackException({exception: err.message, properties: props});
+                        //error = true;
+                        reject(err);
+                    }
+                });
+            } else {
+                //no need to make api calls to azure key vault as the secrets are already cached
+                console.log('LOAD;BEG;Get azure key vault secrets from cache;' + invocationId);
+                console.log('LOAD;END;Get azure key vault secrets from cache;' + invocationId);
+                resolve(azureKeyVaultSecrets);
+            }
+        })
+},
+
+isExpired: function (t, invocationId) {
+    var duration = new Date() - t;
+    console.log('duration: ' + duration);
+    console.log('LOAD;BEG;Check cache TTL;' + invocationId);
+    if (duration >= cacheExpiration) {
+        console.log('LOAD;END;Check cache TTL - refresh secrets cache from azure key vault instance;' + invocationId);
+        console.log('timeToLive (before): ' + timeToLive);
+        timeToLive = new Date();
+        console.log('timeToLive (after): ' + timeToLive);
+        return true;
+    } else {
+        console.log('LOAD;END;Check cache TTL - pull secrets from azure key vault cache;' + invocationId);
+        return false;
+    }
+},
+    
     getConfig: function(login, pass, svrname, dbname) {
         return {
             authentication: {
@@ -101,7 +194,6 @@ module.exports = {
             v0.27.6-0 (MINOR++)
             v1.00.0-0 (MAJOR++)
         */
-        var regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/
 
         reportedVersion = this.validateVersionFormat(reportedVersion);
         desiredVersion = this.validateVersionFormat(desiredVersion);
@@ -181,7 +273,7 @@ module.exports = {
         if (matched === null) { return false} else {return true}
     },
     validateVersionFormat(s) {
-        let regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/
+        let regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)-(\d+)-g[0-9a-zA-Z-]+$/
         let matched = regex.exec(s);
         return matched;
     },
