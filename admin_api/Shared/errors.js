@@ -1,5 +1,3 @@
-var _ = require('lodash');
-
 module.exports = {
 
     getCustomProperties(status, method, url, message, error, request) {

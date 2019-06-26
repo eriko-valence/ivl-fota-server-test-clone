@@ -33,7 +33,7 @@ module.exports =  function (context, req) {
             let azureSqlServerName = _.get(results[3], 'value', '');
             let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
             var connection = new Connection(config); //initiate sql database connection
-            connection.on('connect', function(err) {
+            connection.on('connect', function() {
                 if (requestMethod === 'GET') {
                     getFirmware(connection); //Returns a list of all firmware versions registered in the MFOX DB.
                 } else if (requestMethod === 'POST') {
@@ -47,7 +47,6 @@ module.exports =  function (context, req) {
                 console.log(err);
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                 client.trackException({exception: err.message, properties: props});
-                error = true;
                 context.res = {
                     status: 500,             
                     body: {
@@ -63,7 +62,6 @@ module.exports =  function (context, req) {
             console.log(err);
             let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
             client.trackException({exception: err.message, properties: props});
-            error = true;
             context.res = {
                 status: 500,             
                 body: {
@@ -78,7 +76,7 @@ module.exports =  function (context, req) {
    function getFirmware(connection) {
         let error = false;
         let sqlQuery = 'fota_uspGetAllFirmware';
-        request = new Request(sqlQuery, function(err) {
+        let request = new Request(sqlQuery, function(err) {
             if (err) { 
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                 client.trackException({exception: err.message, properties: props});
@@ -107,7 +105,7 @@ module.exports =  function (context, req) {
             if (firmware.length > 0) {
                 let model = models.getApiResponseModelFirmwareManifest();
                 let apiResponseBody = [];
-                _.forEach(firmware, function(fw, key) {
+                _.forEach(firmware, function(fw) {
                     let bloburi = helper.getAzureBlobUri(fw['blob_container'], fw['blob_name']);
                     let fw_response = _.pick(fw, _.keys(model));
                     fw_response.uri = bloburi.toString().replace("https", "http");
@@ -160,7 +158,7 @@ module.exports =  function (context, req) {
             }
 
             let sqlQuery = 'fota_uspCreateFirmware';
-            request = new Request(sqlQuery, function(err) {
+            let request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                     client.trackException({exception: err.message, properties: props});
@@ -196,7 +194,7 @@ module.exports =  function (context, req) {
 
 
             //Use this event handler if the usp returns an output parameter
-            request.on('returnValue', function (parameterName, value, metadata) {
+            request.on('returnValue', function (parameterName, value) {
                 if (parameterName === 'result' && value === 1) { //1 = successful  update
                     if (firmware.length > 0) {
                         context.res = {
@@ -236,6 +234,7 @@ module.exports =  function (context, req) {
 
     function deleteFirmware(connection) {
         let firmware_id = _.get(req.params, 'firmware_version_id', null);
+        let error = false;
 
         if (!(helper.isIntegerOnly(firmware_id))) {
             context.res = {
@@ -250,7 +249,7 @@ module.exports =  function (context, req) {
 
         if (firmware_id !== null) {
             let sqlQuery = 'fota_uspDeleteFirmware';
-            request = new Request(sqlQuery, function(err) {
+            let request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                     client.trackException({exception: err.message, properties: props});
@@ -269,7 +268,7 @@ module.exports =  function (context, req) {
             request.addOutputParameter('result', TYPES.Int);
             
             //Use this event handler if the usp returns an output parameter
-            request.on('returnValue', function (parameterName, value, metadata) { 
+            request.on('returnValue', function (parameterName, value) { 
                 if (parameterName === 'result' && value === 1) {
                     context.res = {
                         status: 204
