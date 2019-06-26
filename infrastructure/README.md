@@ -96,6 +96,9 @@ terraform apply -var-file="terraform.tfvars"
 
 ## Manually Configure Azure infrastructure
 - Set values for the following secrets (Azure Key Vault):
+
+	- Note: Any changes to Azure Key Vault secrets require up to 5 minutes to take effect due to Azure Function cache settings
+
 ```
 'AzureBlobStorageConnectionString'
 'AzureSqlServerLoginName'
