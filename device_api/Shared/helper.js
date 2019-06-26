@@ -3,6 +3,7 @@ var azure = require('azure-storage');
 const msRestAzure = require('ms-rest-azure');
 const appInsights = require("applicationinsights");
 const KeyVault = require('azure-keyvault');
+const errors = require('../Shared/errors');
 
 // secrets to pull from azure key vault
 var azureKeyVaultSecrets = {
@@ -18,7 +19,7 @@ var cacheExpiration = 300000;
 var timeToLive = undefined;
 
 module.exports = {
-    getAzureKeyVaultSecrets(invocationId) {
+    getAzureKeyVaultSecrets(invocationId, req) {
         return new Promise(function(resolve, reject) {
             if (timeToLive === undefined) {
                 timeToLive = new Date();
@@ -65,7 +66,7 @@ module.exports = {
                         console.log(err);
                         let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                         client.trackException({exception: err.message, properties: props});
-                        error = true;
+                        //error = true;
                         reject(err);
                     }
                 });
@@ -193,7 +194,6 @@ isExpired: function (t, invocationId) {
             v0.27.6-0 (MINOR++)
             v1.00.0-0 (MAJOR++)
         */
-        var regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/
 
         reportedVersion = this.validateVersionFormat(reportedVersion);
         desiredVersion = this.validateVersionFormat(desiredVersion);
@@ -273,7 +273,7 @@ isExpired: function (t, invocationId) {
         if (matched === null) { return false} else {return true}
     },
     validateVersionFormat(s) {
-        let regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)\-(\d+)\-g[0-9a-zA-Z\-]+$/
+        let regex = /^[a-zA-Z](\d+)\.(\d+)\.(\d+)-(\d+)-g[0-9a-zA-Z-]+$/
         let matched = regex.exec(s);
         return matched;
     },

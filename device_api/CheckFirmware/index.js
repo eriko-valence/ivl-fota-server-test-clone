@@ -2,8 +2,6 @@ var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
 var _ = require('lodash');
-const KeyVault = require('azure-keyvault');
-const msRestAzure = require('ms-rest-azure');
 const helper = require('../Shared/helper');
 const apihelper = require('../Shared/apimappings');
 const models = require('../Shared/models');
@@ -44,14 +42,11 @@ module.exports = function (context, req) {
         };
         context.done();
     } else {
-        let secret = _.get(process.env, 'AzureADClientSecret', '');
-        let clientId = _.get(process.env, 'AzureADClientID', '');
-        let domain = _.get(process.env, 'AzureADTenantID');
         appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
         let client = appInsights.defaultClient;
 
         console.log('LOAD;BEG;Get azure key vault secrets (either from key vault or cache);' + context.invocationId);
-        helper.getAzureKeyVaultSecrets(context.invocationId).then((azureKeyVaultSecrets) => {
+        helper.getAzureKeyVaultSecrets(context.invocationId, req).then((azureKeyVaultSecrets) => {
             console.log('LOAD;END;Get azure key vault secrets (either from key vault or cache);' + context.invocationId);
             let azureSqlLoginName = _.get(azureKeyVaultSecrets, 'AzureSqlServerLoginName', '');
             let azureSqlLoginPass = _.get(azureKeyVaultSecrets, 'AzureSqlServerLoginPass', '');
@@ -67,7 +62,7 @@ module.exports = function (context, req) {
                     console.log(err);
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                     client.trackException({exception: err.message, properties: props});
-                    error = true;
+                    //error = true;
                     context.res = {
                         status: 500,             
                         body: {
@@ -100,12 +95,14 @@ module.exports = function (context, req) {
       should download and apply.
     */
     function getFirmwareManifest(blobConnection, connection) {
+        appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
+        let client = appInsights.defaultClient;
         console.log('LOAD;BEG;Get firmware manifest from azure sql db;' + context.invocationId);
         let deviceid = _.get(req.params, 'deviceid', ''); //pull deviceid from route parameter
         let reportedVersion = _.get(req.query, 'ver', ''); //pull reported firmware version from query parameter
         let sqlQuery = 'fota_uspGetDeviceFirmwareManifest';
         //represents an azure sql query request that can be executed on a connection
-        request = new Request(sqlQuery, function(err) {
+        let request = new Request(sqlQuery, function(err) {
             connection.close();
             if (err) {
                 console.log('LOAD;ERROR;Get firmware manifest from azure sql db;' + context.invocationId);
