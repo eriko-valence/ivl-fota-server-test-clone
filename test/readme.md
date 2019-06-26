@@ -6,14 +6,32 @@ The script is configured to use a specific device that should be configured agai
 
 See the `deviceapitest.py` script for more details.
 
+The timeout for the script is set to 120 seconds which is the timeout set for the fridge FOTA agent code so should be representative of in-field performance.
+
+### Functional Test
 To run:
 `python3 deviceapitest.py 2> output.txt`
 
 Inspect `output.txt` for the results.  Look for `FAIL` to see any failed tests.
 
-The script will run a functional test of the Device API and then launch into a small load test where it simulates getting a firmware manifest and downloading from the provided URI, and then a larger load test where it concurrently hits the manifest endpoint more times.
+The script will run a functional test of the Device API.
 
-The timeout for the script is set to 120 seconds which is the timeout set for the fridge FOTA agent code so should be representative of in-field performance.
+### Basic Load Test
+
+`python3 deviceapitest.py -load 2> output.txt`
+
+Inspect `output.txt` for the results.  Look for `FAIL` to see any failed tests.
+
+This runs a small load test where it simulates getting a firmware manifest and downloading from the provided URI, and then a larger load test where it concurrently hits the manifest endpoint more times.
+
+### Load Limit Test
+
+`python3 deviceapitest.py -loadlimit 200 60 2> output.txt`
+
+In the above example, the script will hit the manifest endpoint 200 times over a 60 second period.
+
+Inspect `output.txt` for the results.  Look for `FAIL` to see any failed tests.
+
 
 ## Management API
 The script is configured with several expected IDs it expects to find in the DB.  Review `managementapitest.py` for more details.
