@@ -10,8 +10,6 @@ const errors = require('../Shared/errors');
 const appInsights = require("applicationinsights");
 
 module.exports =  function (context, req) {
-    context.log('incoming request...');
-    console.log('incoming request...');
     let requestMethod = _.get(req, 'method', ''); 
     let sortBy = _.get(req.query, 'sort_by', ''); //example --> sort_by=desc(deviceid)
     let secret = _.get(process.env, 'AzureADClientSecret', '');
@@ -34,7 +32,7 @@ module.exports =  function (context, req) {
             let azureSqlServerName = _.get(results[3], 'value', '');
             let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
             var connection = new Connection(config); //initiate sql database connection
-            connection.on('connect', function(err) {
+            connection.on('connect', function() {
                 if (requestMethod === 'GET') {
                     getGroups(connection); //Returns a list of all groups registered in the MFOX DB.
                 } else if (requestMethod === 'POST') {
@@ -50,7 +48,6 @@ module.exports =  function (context, req) {
                 console.log(err);
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                 client.trackException({exception: err.message, properties: props});
-                error = true;
                 context.res = {
                     status: 500,             
                     body: {
@@ -66,7 +63,6 @@ module.exports =  function (context, req) {
             console.log(err);
             let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
             client.trackException({exception: err.message, properties: props});
-            error = true;
             context.res = {
                 status: 500,             
                 body: {
@@ -81,7 +77,7 @@ module.exports =  function (context, req) {
    function getGroups(connection) {
         let error = false;
         let sqlQuery = 'fota_uspGetAllGroups';
-        request = new Request(sqlQuery, function(err) {
+        let request = new Request(sqlQuery, function(err) {
             if (err) { 
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                 client.trackException({exception: err.message, properties: props});
@@ -165,7 +161,7 @@ module.exports =  function (context, req) {
             }
 
             let sqlQuery = 'fota_uspCreateGroup';
-            request = new Request(sqlQuery, function(err) {
+            let request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                     client.trackException({exception: err.message, properties: props});
@@ -194,7 +190,7 @@ module.exports =  function (context, req) {
            });
 
             //Use this event handler if the usp returns an output parameter
-            request.on('returnValue', function (parameterName, value, metadata) {
+            request.on('returnValue', function (parameterName, value) {
             if (parameterName === 'result' && value === 1) { //1 = successful  update
                 if (groups.length > 0) {
                     context.res = {
@@ -301,7 +297,7 @@ module.exports =  function (context, req) {
             }
 
             let sqlQuery = 'fota_uspUpdateGroup';
-            request = new Request(sqlQuery, function(err) {
+            let request = new Request(sqlQuery, function(err) {
                 context.log(err);
                 if (err) { 
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
@@ -333,7 +329,7 @@ module.exports =  function (context, req) {
             });
 
             //Use this event handler if the usp returns an output parameter
-            request.on('returnValue', function (parameterName, value, metadata) {
+            request.on('returnValue', function (parameterName, value) {
                 if (parameterName === 'result' && value === 1) { //1 = successful  update
                     if (groups.length > 0) { // make sure the updated group record was returned
                         context.res = {
@@ -399,7 +395,7 @@ module.exports =  function (context, req) {
 
         if (groupid !== null) {
             let sqlQuery = 'fota_uspDeleteGroup';
-            request = new Request(sqlQuery, function(err) {
+            let request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                     client.trackException({exception: err.message, properties: props});
@@ -418,7 +414,7 @@ module.exports =  function (context, req) {
             request.addOutputParameter('result', TYPES.Int);
             
             //Use this event handler if the usp returns an output parameter
-            request.on('returnValue', function (parameterName, value, metadata) { 
+            request.on('returnValue', function (parameterName, value) { 
                 if (parameterName === 'result' && value === 1) {
                     context.res = {
                         status: 204

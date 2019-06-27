@@ -71,7 +71,6 @@ module.exports = {
       To learn more, see https://github.com/Azure-Samples/functions-dotnet-sas-token/blob/master/README.md
     */
    generateSasToken(connString, container, blobName, permissions) {
-    //var connString = process.env.AzureBlobStorageDevice;
     var blobService = azure.createBlobService(connString);
     // Create a SAS token that expires in an hour
     // Set start time to five minutes ago to avoid clock skew.

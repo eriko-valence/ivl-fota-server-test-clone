@@ -2,14 +2,17 @@ const helper = require('../Shared/helper');
 var _ = require('lodash');
 const msRestAzure = require('ms-rest-azure');
 const KeyVault = require('azure-keyvault');
+const errors = require('../Shared/errors');
+const appInsights = require("applicationinsights");
 
 module.exports = function (context, req) {
     let requestMethod = _.get(req, 'method', ''); 
-    console.log(requestMethod);
-    let sortBy = _.get(req.query, 'sort_by', ''); //example --> sort_by=desc(deviceid)
     let secret = process.env.AzureADClientSecret;
     let clientId = process.env.AzureADClientID;
     let domain = process.env.AzureADTenantID;
+    appInsights.setup().start(); // assuming APPINSIGHTS_INSTRUMENTATIONKEY is in env var
+    let client = appInsights.defaultClient;
+
     msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain).then((credentials) => {
         const keyVaultClient = new KeyVault.KeyVaultClient(credentials);
         var keyVaultname = process.env.AzureKeyVaultName;
@@ -25,7 +28,6 @@ module.exports = function (context, req) {
                 console.log(err);
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                 client.trackException({exception: err.message, properties: props});
-                error = true;
                 context.res = {
                     status: 500,             
                     body: {

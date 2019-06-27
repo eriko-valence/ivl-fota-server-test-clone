@@ -32,7 +32,7 @@ module.exports =  function (context, req) {
             let azureSqlServerName = _.get(results[3], 'value', '');
             let config = helper.getConfig(azureSqlLoginName, azureSqlLoginPass, azureSqlServerName, azureSqlDatabaseName); //build out azure sql config
             var connection = new Connection(config); //initiate sql database connection
-            connection.on('connect', function(err) {
+            connection.on('connect', function() {
                 if (requestMethod === 'GET') {
                     getDevices(connection); //List All Devices
                 } else if (requestMethod === 'POST') {
@@ -46,7 +46,6 @@ module.exports =  function (context, req) {
                 console.log(err);
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                 client.trackException({exception: err.message, properties: props});
-                error = true;
                 context.res = {
                     status: 500,             
                     body: {
@@ -62,7 +61,6 @@ module.exports =  function (context, req) {
             console.log(err);
             let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
             client.trackException({exception: err.message, properties: props});
-            error = true;
             context.res = {
                 status: 500,             
                 body: {
@@ -105,7 +103,7 @@ module.exports =  function (context, req) {
             }
         }
         
-        request = new Request(sqlQuery, function(err) {
+        let request = new Request(sqlQuery, function(err) {
             if (err) { 
                 let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                 client.trackException({exception: err.message, properties: props});
@@ -187,7 +185,7 @@ module.exports =  function (context, req) {
 
         if (deviceid !== null) {
             let sqlQuery = 'uspCreateDevice';
-            request = new Request(sqlQuery, function(err) {
+            let request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                     client.trackException({exception: err.message, properties: props});
@@ -285,7 +283,7 @@ module.exports =  function (context, req) {
             }
 
             let sqlQuery = 'fota_uspUpdateDevice';
-            request = new Request(sqlQuery, function(err) {
+            let request = new Request(sqlQuery, function(err) {
                 if (err) { 
                     let props = errors.getCustomProperties(500, req.method, req.url, err.message, err, req);
                     client.trackException({exception: err.message, properties: props});
@@ -315,7 +313,7 @@ module.exports =  function (context, req) {
             });
 
             //Use this event handler if the usp returns an output parameter
-            request.on('returnValue', function (parameterName, value, metadata) {
+            request.on('returnValue', function (parameterName, value) {
                 if (parameterName === 'result' && value === 1) { //1 = successful  update
                     if (devices.length > 0) { // make sure the updated device record was returned
                         context.res = {
