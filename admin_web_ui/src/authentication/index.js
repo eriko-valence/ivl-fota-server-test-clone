@@ -36,7 +36,7 @@ export default {
           console.log(this.authenticationContext._getItem('adal'));
           console.log(this.authenticationContext.getLoginError());
           console.log('Unauthorized!!');
-          window.location.href = 'https://localhost:8080/unauthorized';
+          //window.location.href = 'https://localhost:8080/unauthorized';
           resolve(); //successful authentication & authorization
         }
         
@@ -56,7 +56,10 @@ export default {
                 resolve(); //successful authentication & authorization
             }).catch((error) => {
               shared.trackException(error, 'authentication.initialize.acquiretoken.error');
-              this.signIn();
+              console.log(error);
+              console.log('authentication.initialize.acquiretoken.error... calling signIn()');
+              //this.signIn(); //AADSTS50105 - maybe catch?
+              resolve(); //successful authentication & authorization
             }
             )
         } else {
@@ -73,6 +76,7 @@ export default {
    * @return {Promise.<String>} A promise that resolves to an ADAL token for resource access
    */
   acquireToken(){
+    console.log('acquireToken');
     return new Promise((resolve, reject) => {
       this.authenticationContext.acquireToken(config.resourceApi, (error, token) => {
         if (error || !token) {
@@ -87,6 +91,7 @@ export default {
    * Issue an interactive authentication request for the current user and the api resource.
    */
   acquireTokenRedirect() {
+    console.log('acquireTokenRedirect');
     this.authenticationContext.acquireTokenRedirect(config.resourceApi);
   },
   /**
@@ -94,10 +99,13 @@ export default {
    */
   isAuthenticated() {
     // getCachedToken will only return a valid, non-expired token.
+    console.log('isAuthenticated');
     if (this.authenticationContext.getCachedToken(config.resourceApi)) { return true; }
+    console.log('isAuthenticated - FALSE');
     return false;
   },
   isAdalError() {
+    console.log('isAdalError');
     let loginError = this.authenticationContext.getLoginError();
     var re = /AADSTS50105/i; 
     if ( re.test(loginError) ) {
@@ -109,6 +117,7 @@ export default {
 
   },
   getAccessToken() {
+    console.log('getAccessToken');
     return new Promise((resolve, reject) => {
     // getCachedToken will only return a valid, non-expired token.
     if (this.authenticationContext.getCachedToken(config.resourceApi)) {
@@ -127,12 +136,15 @@ export default {
    * @return An ADAL user profile object.
    */
   getUserProfile() {
+    console.log('getUserProfile');
     return this.authenticationContext.getCachedUser().profile;
   },
   signIn() {
+    console.log('signIn()');
     this.authenticationContext.login();
   },
   signOut() {
+    console.log('signOut()');
     this.authenticationContext.logOut();
   }
 }

@@ -10,12 +10,14 @@
             <strong>Metafridge Management App</strong>
           </b-col>
           <b-col class="text-right">
+            
             <p v-if="isAuthenticated">
               <a href="#" @click.stop="logOut()">Log out</a>
             </p>
             <p v-else>
               <a href="#" @click.stop="logIn()">Log in</a>
             </p>
+            
           </b-col>
         </b-row>
       </b-container>
@@ -26,6 +28,7 @@
     </p>
 
     <b-nav v-if="isAuthenticated" class="nav-tabs">
+    <!--<b-nav class="nav-tabs">-->
       <b-nav-item :active="tab === 'FirmwareManagement'" @click="tab = 'FirmwareManagement'">
         <b-link :to="'firmware'">
           Firmware
@@ -57,20 +60,24 @@
             }
         },
         computed: {
+          
             isAuthenticated() {
                 return authentication.isAuthenticated();
             },
+            
             isAdalError() {
                 return authentication.isAdalError();
             }
         },
         async created () {
+          
             if (authentication.isAuthenticated()) {
                 let userProfile = authentication.getUserProfile();
                 this.msg = 'Hello, ' + userProfile.name
             } else {
                 this.msg = 'Please sign in'
             }
+            
             console.log('1##############################################################');
             this.getError();
             console.log('2##############################################################');
@@ -92,6 +99,7 @@
                 return this._routerRoot._route.name;
             },
             getError() {
+                console.log('Header.vue --> getError()');
                 authentication.isAdalError();
             }
         }
