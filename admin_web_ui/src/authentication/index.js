@@ -1,5 +1,6 @@
 import AuthenticationContext from 'adal-angular/lib/adal.js'
 import shared from '../shared'
+import _ from 'lodash'
 
 const config = {
   tenant: process.env.VUE_APP_AAD_TENANT || '',
@@ -15,10 +16,30 @@ export default {
    * @return {Promise}
    */
   initialize() {
+    console.log('#####################################################>authentication.initialize()');
     this.authenticationContext = new AuthenticationContext(config);
     return new Promise((resolve) => {
       //Checks if the URL fragment contains access token, id token or error_description
       if (this.authenticationContext.isCallback(window.location.hash) || window.self !== window.top) {
+        console.log('#####################################################>authentication.initialize() => token/error found in URL fragment');
+        
+        let hash = _.get(window, 'location.hash', '');
+        var re = /AADSTS50105/i; 
+        console.log('hash:');
+        console.log('----------------------------------------------------');
+        console.log(hash);
+        console.log('-----------------------------------------------------');
+        if ( re.test(hash) ) {
+          console.log(this.authenticationContext._getItem('adal.state.login'));
+          console.log(this.authenticationContext._getItem('adal.error'));
+          console.log(this.authenticationContext._getItem('adal.login'));
+          console.log(this.authenticationContext._getItem('adal'));
+          console.log(this.authenticationContext.getLoginError());
+          console.log('Unauthorized!!');
+          window.location.href = 'https://localhost:8080/unauthorized';
+          resolve(); //successful authentication & authorization
+        }
+        
         // redirect to the location specified in the url params.
         /*
            This method must be called for processing the response received from AAD. 
@@ -30,6 +51,7 @@ export default {
         let user = this.authenticationContext.getCachedUser();
 
         if (user) {
+          console.log('#####################################################>authentication.initialize() => no token/error found in URL fragment => user found');
             this.acquireToken().then(() => { 
                 resolve(); //successful authentication & authorization
             }).catch((error) => {
@@ -39,7 +61,9 @@ export default {
             )
         } else {
           // no user at all - go sign in.
-          this.signIn();
+          console.log('#####################################################>authentication.initialize() => no token/error found in URL fragment => NO user found');
+          //this.signIn();
+          resolve(); //successful authentication & authorization
         }
       }
     });
@@ -72,6 +96,17 @@ export default {
     // getCachedToken will only return a valid, non-expired token.
     if (this.authenticationContext.getCachedToken(config.resourceApi)) { return true; }
     return false;
+  },
+  isAdalError() {
+    let loginError = this.authenticationContext.getLoginError();
+    var re = /AADSTS50105/i; 
+    if ( re.test(loginError) ) {
+      return true;
+    } else {
+      return false;
+    }
+
+
   },
   getAccessToken() {
     return new Promise((resolve, reject) => {

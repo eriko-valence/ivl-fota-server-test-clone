@@ -15,6 +15,7 @@ Vue.use(VueAxios, axios)
 Vue.use(VueClipboard)
 
 authentication.initialize().then(() => {
+  console.log('###############################################> authentication.initialize().then(() => ');
   new Vue({
     router,
     render: h => h(App)

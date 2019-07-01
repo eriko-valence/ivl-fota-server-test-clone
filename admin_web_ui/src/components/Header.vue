@@ -13,12 +13,19 @@
             <p v-if="isAuthenticated">
               <a href="#" @click.stop="logOut()">Log out</a>
             </p>
+            <p v-else>
+              <a href="#" @click.stop="logIn()">Log in</a>
+            </p>
           </b-col>
         </b-row>
       </b-container>
     </b-card>
 
-    <b-nav class="nav-tabs">
+    <p v-if="isAdalError">
+      Unauthorized user!!!
+    </p>
+
+    <b-nav v-if="isAuthenticated" class="nav-tabs">
       <b-nav-item :active="tab === 'FirmwareManagement'" @click="tab = 'FirmwareManagement'">
         <b-link :to="'firmware'">
           Firmware
@@ -52,6 +59,9 @@
         computed: {
             isAuthenticated() {
                 return authentication.isAuthenticated();
+            },
+            isAdalError() {
+                return authentication.isAdalError();
             }
         },
         async created () {
@@ -61,10 +71,16 @@
             } else {
                 this.msg = 'Please sign in'
             }
+            console.log('1##############################################################');
+            this.getError();
+            console.log('2##############################################################');
         },
         methods: {
             logOut() {
                 authentication.signOut();
+            },
+            logIn() {
+                authentication.signIn();
             },
             getToken() {
                 authentication.acquireToken();
@@ -74,6 +90,9 @@
             },
             getCurrentRouteName() {
                 return this._routerRoot._route.name;
+            },
+            getError() {
+                authentication.isAdalError();
             }
         }
     }
