@@ -82,7 +82,7 @@ terraform workspace new dev
 ```
 - Switch to the existing workspace if you already have one for your environment to be deployed. For example:
 ```
-terraform workspace switch dev
+terraform workspace select dev
 ```
 - Confirm you are now using the correct workspace
 ```
