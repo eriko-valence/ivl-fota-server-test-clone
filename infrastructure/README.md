@@ -153,6 +153,7 @@ terraform apply -var-file="terraform.tfvars"
 		- VUE_APP_AAD_REDIRECT_URI (i.e., admin web ui url)
 		- VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY
 	- Change the directory to 'iv_fota_server\admin_web_ui' and run the command `npm run build`
+		- Note: Install this package if it is not already installed on your machine: `npm install -g @vue/cli-service-global`
 	- Upload all contents in 'iv_fota_server\admin_web_ui\dist' to azure storage blob container $web
 		- Change to the directory 'iv_fota_server\admin_web_ui\dist'
 		- Run this command: `az storage blob upload-batch --account-name {storage_acct_name} --destination '$web' --source ./`
