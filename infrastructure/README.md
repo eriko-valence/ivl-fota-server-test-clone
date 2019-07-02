@@ -100,7 +100,7 @@ terraform apply -var-file="terraform.tfvars"
 'AzureSqlDatabaseName'
 'AzureSqlServerName'
 ```
-- Set Function App Azure Key Vault credentials (Azure )
+- Set Function App Azure Key Vault credentials (Azure AD / Azure Function App )
 	- Admin API
 		- Open Azure Active Directory in the azure portal
 		- Navigate to 'App Registration'
@@ -141,6 +141,7 @@ terraform apply -var-file="terraform.tfvars"
 	- Open the azure storage account in the azure portal (e.g., saivlfotadev)
 	- Select 'CORS' and configure as follows:
 		- Allowed origins: This is the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net)
+			- Note: Do NOT include a trailing slash in the URL
 		- Allowed Methods: PUT
 		- Allowed Headers: *
 		- Exposed Header: *
