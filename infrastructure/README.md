@@ -230,5 +230,5 @@ terraform workspace list
 ```
 - Destroy the environment
 ```
-terraform destroy -var-file="terraform.dev.tfvars"
+terraform destroy -var-file="terraform.tfvars"
 ```
