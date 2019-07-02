@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-table :busy="isLoading" striped hover :items="items" :fields="fields">
-      <div class="text-center text-danger my-2">
+      <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle" />
         <strong>Loading...</strong>
       </div>

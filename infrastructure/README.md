@@ -39,12 +39,6 @@ az login
 az account list --output table
 az account set --subscription "IVL Development"
 ```
-## Example variable values used by README.md
-```
-aad_admin_web_ui_app_name = "IVL_FOTA_Admin_Web_UI"
-aad_admin_rest_api_app_name = "IVL_FOTA_Admin_API"
-aad_device_rest_api_app_name = "IVL_FOTA_Device_API"
-```
 
 ## Prepare Terraform variables (set in terraform.tfvars file)
 - The following values can be customized based on preference:
@@ -82,7 +76,7 @@ terraform workspace new dev
 ```
 - Switch to the existing workspace if you already have one for your environment to be deployed. For example:
 ```
-terraform workspace switch dev
+terraform workspace select dev
 ```
 - Confirm you are now using the correct workspace
 ```
