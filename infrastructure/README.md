@@ -100,7 +100,7 @@ terraform apply -var-file="terraform.tfvars"
 'AzureSqlDatabaseName'
 'AzureSqlServerName'
 ```
-- Set Function App Azure Key Vault credentials (Azure )
+- Set Function App Azure Key Vault credentials (Azure AD / Azure Function App )
 	- Admin API
 		- Open Azure Active Directory in the azure portal
 		- Navigate to 'App Registration'
@@ -141,6 +141,7 @@ terraform apply -var-file="terraform.tfvars"
 	- Open the azure storage account in the azure portal (e.g., saivlfotadev)
 	- Select 'CORS' and configure as follows:
 		- Allowed origins: This is the URL to the admin web ui (e.g., https://saivlfotadev.z22.web.core.windows.net)
+			- Note: Do NOT include a trailing slash in the URL
 		- Allowed Methods: PUT
 		- Allowed Headers: *
 		- Exposed Header: *
@@ -152,6 +153,7 @@ terraform apply -var-file="terraform.tfvars"
 		- VUE_APP_AAD_REDIRECT_URI (i.e., admin web ui url)
 		- VUE_APP_APPINSIGHTS_INSTRUMENTATIONKEY
 	- Change the directory to 'iv_fota_server\admin_web_ui' and run the command `npm run build`
+		- Note: Install this package if it is not already installed on your machine: `npm install -g @vue/cli-service-global`
 	- Upload all contents in 'iv_fota_server\admin_web_ui\dist' to azure storage blob container $web
 		- Change to the directory 'iv_fota_server\admin_web_ui\dist'
 		- Run this command: `az storage blob upload-batch --account-name {storage_acct_name} --destination '$web' --source ./`
@@ -230,5 +232,5 @@ terraform workspace list
 ```
 - Destroy the environment
 ```
-terraform destroy -var-file="terraform.dev.tfvars"
+terraform destroy -var-file="terraform.tfvars"
 ```
